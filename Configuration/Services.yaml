@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Medartis\DigitalCatalog\:
+    resource: '../Classes/*'
+
+  Medartis\DigitalCatalog\Controller\CatalogController:
+    public: true
+    tags:
+      - name: extbase.controller

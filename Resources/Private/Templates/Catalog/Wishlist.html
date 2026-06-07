@@ -1,0 +1,185 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+
+    <div class="dc-wishlist-page">
+
+        <!-- Header -->
+        <div class="dc-wishlist-header">
+            <a href="{f:uri.page(pageUid: settings.catalogPageUid)}" class="dc-breadcrumb__link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <f:translate key="wishlist.back" extensionName="DigitalCatalog" />
+            </a>
+            <h1 class="dc-wishlist-header__title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+                <f:translate key="wishlist.title" extensionName="DigitalCatalog" />
+                <span class="dc-wishlist-header__count">({wishlistCount})</span>
+            </h1>
+        </div>
+
+        <!-- Success State -->
+        <f:if condition="{submitted}">
+            <div class="dc-submitted">
+                <div class="dc-submitted__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                    </svg>
+                </div>
+                <h2><f:translate key="submitted.title" extensionName="DigitalCatalog" /></h2>
+                <p><f:translate key="submitted.desc" extensionName="DigitalCatalog" /></p>
+                <a href="{f:uri.page(pageUid: settings.catalogPageUid)}" class="dc-btn dc-btn--primary">
+                    <f:translate key="submitted.browse" extensionName="DigitalCatalog" />
+                </a>
+            </div>
+        </f:if>
+
+        <f:if condition="{!submitted}">
+            <f:if condition="{articleItems}">
+                <f:then>
+                    <div class="dc-wishlist-layout">
+
+                        <!-- Product List -->
+                        <div class="dc-wishlist-products">
+                            <h2 class="dc-wishlist-products__title">
+                                <f:translate key="wishlist.products.title" extensionName="DigitalCatalog" />
+                            </h2>
+                            <div class="dc-wishlist-items">
+                                <f:for each="{articleItems}" as="item">
+                                    <div class="dc-wishlist-item">
+                                        <div class="dc-wishlist-item__media">
+                                            <f:if condition="{item.article.image}">
+                                                <f:then>
+                                                    <f:image image="{item.article.image}" class="dc-wishlist-item__img" alt="{item.article.productName}" width="80" height="80c" />
+                                                </f:then>
+                                                <f:else>
+                                                    <div class="dc-wishlist-item__placeholder">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                                            <path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0z" />
+                                                        </svg>
+                                                    </div>
+                                                </f:else>
+                                            </f:if>
+                                        </div>
+                                        <div class="dc-wishlist-item__info">
+                                            <p class="dc-wishlist-item__name">{item.article.productName}</p>
+                                            <p class="dc-wishlist-item__number">
+                                                <f:translate key="detail.article.number" extensionName="DigitalCatalog" /> {item.article.articleNumber}
+                                            </p>
+                                            <f:if condition="{item.article.systems}">
+                                                <div class="dc-wishlist-item__systems">
+                                                    <f:for each="{item.article.systems}" as="system">
+                                                        <span class="dc-tag dc-tag--sm">{system.title}</span>
+                                                    </f:for>
+                                                </div>
+                                            </f:if>
+                                        </div>
+                                        <f:form action="updateQuantity" method="post" class="dc-qty-form js-qty-form">
+                                            <f:form.hidden name="articleUid" value="{item.article.uid}" />
+                                            <f:form.hidden name="quantity" value="{item.qty}" />
+                                            <div class="dc-qty-stepper">
+                                                <button type="button" class="dc-qty-btn dc-qty-btn--minus" aria-label="decrease">−</button>
+                                                <span class="dc-qty-display">{item.qty}</span>
+                                                <button type="button" class="dc-qty-btn dc-qty-btn--plus" aria-label="increase">+</button>
+                                            </div>
+                                        </f:form>
+                                        <f:form action="removeFromWishlist" method="post" class="dc-form-inline">
+                                            <f:form.hidden name="articleUid" value="{item.article.uid}" />
+                                            <button type="submit" class="dc-wishlist-item__remove"
+                                                    title="{f:translate(key: 'wishlist.remove', extensionName: 'DigitalCatalog')}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <path d="M6 18 18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </f:form>
+                                    </div>
+                                </f:for>
+                            </div>
+                        </div>
+
+                        <!-- Inquiry Form -->
+                        <div class="dc-inquiry-form">
+                            <h2 class="dc-inquiry-form__title">
+                                <f:translate key="inquiry.title" extensionName="DigitalCatalog" />
+                            </h2>
+                            <p class="dc-inquiry-form__desc">
+                                <f:translate key="inquiry.desc" extensionName="DigitalCatalog" />
+                            </p>
+
+                            <f:form action="submitInquiry" method="post" class="dc-form">
+                                <div class="dc-form__row">
+                                    <div class="dc-form__group">
+                                        <label class="dc-form__label" for="dc-name">
+                                            <f:translate key="inquiry.name" extensionName="DigitalCatalog" />
+                                            <span class="dc-form__required">*</span>
+                                        </label>
+                                        <f:form.textfield id="dc-name" name="name" class="dc-form__input"
+                                            placeholder="{f:translate(key: 'inquiry.name.placeholder', extensionName: 'DigitalCatalog')}"
+                                            required="required" />
+                                    </div>
+                                    <div class="dc-form__group">
+                                        <label class="dc-form__label" for="dc-email">
+                                            <f:translate key="inquiry.email" extensionName="DigitalCatalog" />
+                                            <span class="dc-form__required">*</span>
+                                        </label>
+                                        <f:form.textfield id="dc-email" name="email" type="email" class="dc-form__input"
+                                            placeholder="{f:translate(key: 'inquiry.email.placeholder', extensionName: 'DigitalCatalog')}"
+                                            required="required" />
+                                    </div>
+                                </div>
+                                <div class="dc-form__group">
+                                    <label class="dc-form__label" for="dc-company">
+                                        <f:translate key="inquiry.company" extensionName="DigitalCatalog" />
+                                    </label>
+                                    <f:form.textfield id="dc-company" name="company" class="dc-form__input"
+                                        placeholder="{f:translate(key: 'inquiry.company.placeholder', extensionName: 'DigitalCatalog')}" />
+                                </div>
+                                <div class="dc-form__group">
+                                    <label class="dc-form__label" for="dc-message">
+                                        <f:translate key="inquiry.message" extensionName="DigitalCatalog" />
+                                    </label>
+                                    <f:form.textarea id="dc-message" name="message" class="dc-form__textarea"
+                                        placeholder="{f:translate(key: 'inquiry.message.placeholder', extensionName: 'DigitalCatalog')}"
+                                        rows="4" />
+                                </div>
+                                <div class="dc-form__privacy">
+                                    <input type="checkbox" id="dc-privacy" name="privacy" required="required" class="dc-form__checkbox" />
+                                    <label for="dc-privacy" class="dc-form__privacy-label">
+                                        <f:translate key="inquiry.privacy" extensionName="DigitalCatalog" />
+                                        <span class="dc-form__required">*</span>
+                                    </label>
+                                </div>
+                                <button type="submit" class="dc-btn dc-btn--primary dc-btn--full">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12zm0 0h7.5" />
+                                    </svg>
+                                    <f:translate key="inquiry.submit" extensionName="DigitalCatalog" />
+                                </button>
+                            </f:form>
+                        </div>
+
+                    </div>
+                </f:then>
+                <f:else>
+                    <div class="dc-empty dc-empty--wishlist">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                        </svg>
+                        <p><f:translate key="wishlist.empty" extensionName="DigitalCatalog" /></p>
+                        <a href="{f:uri.page(pageUid: settings.catalogPageUid)}" class="dc-btn dc-btn--primary">
+                            <f:translate key="wishlist.discover" extensionName="DigitalCatalog" />
+                        </a>
+                    </div>
+                </f:else>
+            </f:if>
+        </f:if>
+
+    </div>
+
+</f:section>
+</html>

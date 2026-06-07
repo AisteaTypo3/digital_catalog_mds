@@ -1,0 +1,97 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+
+    <div class="dc-header">
+        <div class="dc-header__inner">
+            <div class="dc-header__title-group">
+                <h1 class="dc-header__title"><f:translate key="catalog.title" extensionName="DigitalCatalog" /></h1>
+                <p class="dc-header__subtitle">{totalCount} <f:translate key="catalog.subtitle" extensionName="DigitalCatalog" /></p>
+            </div>
+            <a class="dc-wishlist-btn" href="{f:uri.page(pageUid: settings.wishlistPageUid)}">
+                <span class="dc-wishlist-btn__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                    </svg>
+                </span>
+                <span class="dc-wishlist-btn__label"><f:translate key="wishlist.btn.label" extensionName="DigitalCatalog" /></span>
+                <span class="dc-wishlist-btn__count" id="dc-wishlist-count" data-count="{wishlistCount}">{wishlistCount}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="dc-filter">
+        <form action="{f:uri.page()}" method="get" class="dc-filter__form"
+              data-base-url="{f:uri.page()}">
+            <input type="hidden" name="tx_digitalcatalog_catalog[action]" value="list" />
+            <input type="hidden" name="tx_digitalcatalog_catalog[controller]" value="Catalog" />
+            <div class="dc-filter__search-wrap">
+                <svg class="dc-filter__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z" />
+                </svg>
+                <input type="text"
+                       name="tx_digitalcatalog_catalog[search]"
+                       value="{search}"
+                       class="dc-filter__search"
+                       placeholder="{f:translate(key: 'filter.search.placeholder', extensionName: 'DigitalCatalog')}" />
+            </div>
+            <div class="dc-filter__selects">
+                <div class="dc-filter__select-wrap">
+                    <select name="tx_digitalcatalog_catalog[system]" id="dc-filter-system" class="dc-filter__select">
+                        <option value="0"><f:translate key="filter.system.all" extensionName="DigitalCatalog" /></option>
+                        <f:for each="{systems}" as="system">
+                            <option value="{system.uid}" {f:if(condition: '{system.uid} == {systemFilter}', then: 'selected="selected"')}>
+                                {system.title}
+                            </option>
+                        </f:for>
+                    </select>
+                    <svg class="dc-filter__select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m19 9-7 7-7-7" />
+                    </svg>
+                </div>
+                <button type="submit" class="dc-filter__btn"><f:translate key="filter.btn.filter" extensionName="DigitalCatalog" /></button>
+                <f:if condition="{search} || {systemFilter}">
+                    <a href="{f:uri.page()}" class="dc-filter__reset">
+                        <f:translate key="filter.btn.reset" extensionName="DigitalCatalog" />
+                    </a>
+                </f:if>
+            </div>
+        </form>
+    </div>
+
+    <div class="dc-results-bar">
+        <span class="dc-results-bar__count">{totalCount} <f:translate key="results.products" extensionName="DigitalCatalog" /></span>
+        <span class="dc-results-bar__pages">
+            <f:translate key="results.page" extensionName="DigitalCatalog" /> {currentPage}
+            <f:translate key="results.of" extensionName="DigitalCatalog" /> {pagination.lastPageNumber}
+        </span>
+    </div>
+
+    <div id="dc-wishlist-data" data-uids="{wishlistUids -> f:format.json()}" style="display:none;"></div>
+
+    <f:if condition="{articles}">
+        <f:then>
+            <div class="dc-grid" id="dc-article-grid">
+                <f:for each="{articles}" as="article">
+                    <f:render partial="Article/Card" arguments="{article: article}" />
+                </f:for>
+            </div>
+            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, systemFilter: systemFilter}" />
+        </f:then>
+        <f:else>
+            <div class="dc-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607zM13.5 10.5h-6" />
+                </svg>
+                <p><f:translate key="results.empty" extensionName="DigitalCatalog" /></p>
+                <a href="{f:uri.action(action:'list')}" class="dc-btn dc-btn--outline">
+                    <f:translate key="results.show.all" extensionName="DigitalCatalog" />
+                </a>
+            </div>
+        </f:else>
+    </f:if>
+
+</f:section>
+</html>

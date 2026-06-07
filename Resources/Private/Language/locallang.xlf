@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="messages">
+        <body>
+            <!-- Header -->
+            <trans-unit id="catalog.title">
+                <source>Product Catalog</source>
+            </trans-unit>
+            <trans-unit id="catalog.subtitle">
+                <source>products</source>
+            </trans-unit>
+
+            <!-- Filter -->
+            <trans-unit id="filter.search.placeholder">
+                <source>Search product or article number …</source>
+            </trans-unit>
+            <trans-unit id="filter.system.all">
+                <source>All Systems</source>
+            </trans-unit>
+            <trans-unit id="filter.bodyregion.all">
+                <source>All Body Regions</source>
+            </trans-unit>
+            <trans-unit id="filter.btn.filter">
+                <source>Filter</source>
+            </trans-unit>
+            <trans-unit id="filter.btn.reset">
+                <source>Reset</source>
+            </trans-unit>
+
+            <!-- Results -->
+            <trans-unit id="results.products">
+                <source>Products found</source>
+            </trans-unit>
+            <trans-unit id="results.page">
+                <source>Page</source>
+            </trans-unit>
+            <trans-unit id="results.of">
+                <source>of</source>
+            </trans-unit>
+            <trans-unit id="results.empty">
+                <source>No products found for your search.</source>
+            </trans-unit>
+            <trans-unit id="results.show.all">
+                <source>Show all products</source>
+            </trans-unit>
+
+            <!-- Card -->
+            <trans-unit id="card.details">
+                <source>Details</source>
+            </trans-unit>
+            <trans-unit id="card.placeholder">
+                <source>No image</source>
+            </trans-unit>
+            <trans-unit id="card.wishlist.add">
+                <source>Add to wishlist</source>
+            </trans-unit>
+
+            <!-- Detail -->
+            <trans-unit id="detail.back">
+                <source>Back to catalog</source>
+            </trans-unit>
+            <trans-unit id="detail.article.number">
+                <source>Art. No.:</source>
+            </trans-unit>
+            <trans-unit id="detail.placeholder">
+                <source>No image available</source>
+            </trans-unit>
+            <trans-unit id="detail.gtin">
+                <source>GTIN / EAN</source>
+            </trans-unit>
+            <trans-unit id="detail.wishlist.add">
+                <source>Add to wishlist</source>
+            </trans-unit>
+            <trans-unit id="detail.wishlist.remove">
+                <source>Remove from wishlist</source>
+            </trans-unit>
+            <trans-unit id="detail.wishlist.view">
+                <source>View wishlist</source>
+            </trans-unit>
+
+            <!-- Documents -->
+            <trans-unit id="docs.title">
+                <source>Available Documents (eIFU)</source>
+            </trans-unit>
+            <trans-unit id="docs.portal.link">
+                <source>Open in eIFU Portal</source>
+            </trans-unit>
+            <trans-unit id="docs.download.pdf">
+                <source>PDF</source>
+            </trans-unit>
+            <trans-unit id="docs.eifu.link">
+                <source>eIFU</source>
+            </trans-unit>
+            <trans-unit id="docs.none">
+                <source>No documents available for this language.</source>
+            </trans-unit>
+
+            <!-- Wishlist page -->
+            <trans-unit id="wishlist.title">
+                <source>Wishlist</source>
+            </trans-unit>
+            <trans-unit id="wishlist.back">
+                <source>Back to catalog</source>
+            </trans-unit>
+            <trans-unit id="wishlist.products.title">
+                <source>Selected Products</source>
+            </trans-unit>
+            <trans-unit id="wishlist.empty">
+                <source>Your wishlist is empty.</source>
+            </trans-unit>
+            <trans-unit id="wishlist.discover">
+                <source>Discover products</source>
+            </trans-unit>
+            <trans-unit id="wishlist.remove">
+                <source>Remove</source>
+            </trans-unit>
+
+            <!-- Inquiry Form -->
+            <trans-unit id="inquiry.title">
+                <source>Request now</source>
+            </trans-unit>
+            <trans-unit id="inquiry.desc">
+                <source>Fill out the form and we will send you further information about the selected products.</source>
+            </trans-unit>
+            <trans-unit id="inquiry.name">
+                <source>Name</source>
+            </trans-unit>
+            <trans-unit id="inquiry.name.placeholder">
+                <source>Your full name</source>
+            </trans-unit>
+            <trans-unit id="inquiry.email">
+                <source>E-Mail</source>
+            </trans-unit>
+            <trans-unit id="inquiry.email.placeholder">
+                <source>your@email.com</source>
+            </trans-unit>
+            <trans-unit id="inquiry.company">
+                <source>Company / Clinic</source>
+            </trans-unit>
+            <trans-unit id="inquiry.company.placeholder">
+                <source>Your company (optional)</source>
+            </trans-unit>
+            <trans-unit id="inquiry.message">
+                <source>Message</source>
+            </trans-unit>
+            <trans-unit id="inquiry.message.placeholder">
+                <source>Your message or specific questions …</source>
+            </trans-unit>
+            <trans-unit id="inquiry.privacy">
+                <source>I agree to the processing of my data in accordance with the privacy policy.</source>
+            </trans-unit>
+            <trans-unit id="inquiry.submit">
+                <source>Send request</source>
+            </trans-unit>
+            <trans-unit id="inquiry.required">
+                <source>required</source>
+            </trans-unit>
+
+            <!-- Success -->
+            <trans-unit id="submitted.title">
+                <source>Request sent successfully!</source>
+            </trans-unit>
+            <trans-unit id="submitted.desc">
+                <source>We have received your request and will get back to you shortly.</source>
+            </trans-unit>
+            <trans-unit id="submitted.browse">
+                <source>Continue browsing</source>
+            </trans-unit>
+
+            <trans-unit id="wishlist.qty">
+                <source>Qty</source>
+            </trans-unit>
+
+            <!-- Wishlist button -->
+            <trans-unit id="wishlist.btn.label">
+                <source>Wishlist</source>
+            </trans-unit>
+
+            <!-- Email -->
+            <trans-unit id="email.subject">
+                <source>Product Inquiry</source>
+            </trans-unit>
+            <trans-unit id="email.intro">
+                <source>A new product inquiry has been submitted via the Digital Catalog.</source>
+            </trans-unit>
+            <trans-unit id="email.sender.title">
+                <source>Contact Details</source>
+            </trans-unit>
+            <trans-unit id="email.sender.name">
+                <source>Name</source>
+            </trans-unit>
+            <trans-unit id="email.sender.email">
+                <source>E-Mail</source>
+            </trans-unit>
+            <trans-unit id="email.sender.company">
+                <source>Company / Clinic</source>
+            </trans-unit>
+            <trans-unit id="email.sender.message">
+                <source>Message</source>
+            </trans-unit>
+            <trans-unit id="email.products.title">
+                <source>Requested Products</source>
+            </trans-unit>
+            <trans-unit id="email.products.col.qty">
+                <source>Qty</source>
+            </trans-unit>
+            <trans-unit id="email.products.col.name">
+                <source>Product</source>
+            </trans-unit>
+            <trans-unit id="email.products.col.number">
+                <source>Art. No.</source>
+            </trans-unit>
+            <trans-unit id="email.products.col.systems">
+                <source>Systems</source>
+            </trans-unit>
+            <trans-unit id="email.attachment.hint">
+                <source>An Excel file with all products is attached to this email.</source>
+            </trans-unit>
+            <trans-unit id="email.footer">
+                <source>This message was generated automatically by the Digital Catalog.</source>
+            </trans-unit>
+            <trans-unit id="email.excel.sheetname">
+                <source>Products</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

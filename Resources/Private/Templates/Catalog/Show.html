@@ -1,0 +1,178 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+<f:section name="Main">
+
+    <div class="dc-detail">
+
+        <nav class="dc-breadcrumb">
+            <a href="{f:uri.page(pageUid: settings.catalogPageUid)}" class="dc-breadcrumb__link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <f:translate key="detail.back" extensionName="DigitalCatalog" />
+            </a>
+        </nav>
+
+        <div class="dc-detail__inner">
+
+            <div class="dc-detail__media">
+                <f:if condition="{article.image}">
+                    <f:then>
+                        <f:image image="{article.image}" class="dc-detail__image" alt="{article.productName}" width="600" height="500c" />
+                    </f:then>
+                    <f:else>
+                        <div class="dc-detail__placeholder">
+                            <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="80" height="80" rx="12" fill="#F0F0F0"/>
+                                <path d="M20 54l14-14a4 4 0 015.6 0l14 14m-4-4l4-4a4 4 0 015.6 0l8 8" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="29" cy="30" r="4" stroke="#C0C0C0" stroke-width="2"/>
+                            </svg>
+                            <span class="dc-detail__placeholder-text"><f:translate key="detail.placeholder" extensionName="DigitalCatalog" /></span>
+                        </div>
+                    </f:else>
+                </f:if>
+            </div>
+
+            <div class="dc-detail__info">
+
+                <f:if condition="{article.systems}">
+                    <div class="dc-detail__systems">
+                        <f:for each="{article.systems}" as="system">
+                            <span class="dc-tag">{system.title}</span>
+                        </f:for>
+                    </div>
+                </f:if>
+
+                <h1 class="dc-detail__title">{article.productName}</h1>
+                <p class="dc-detail__number"><f:translate key="detail.article.number" extensionName="DigitalCatalog" /> <strong>{article.articleNumber}</strong></p>
+
+                <div class="dc-detail__actions">
+                    <f:if condition="{isInWishlist}">
+                        <f:then>
+                            <f:form action="removeFromWishlist" method="post" class="dc-form-inline">
+                                <f:form.hidden name="articleUid" value="{article.uid}" />
+                                <button type="submit" class="dc-btn dc-btn--wishlist dc-btn--wishlist-active">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                    </svg>
+                                    <f:translate key="detail.wishlist.remove" extensionName="DigitalCatalog" />
+                                </button>
+                            </f:form>
+                        </f:then>
+                        <f:else>
+                            <f:form action="addToWishlist" method="post" class="dc-form-inline">
+                                <f:form.hidden name="articleUid" value="{article.uid}" />
+                                <button type="submit" class="dc-btn dc-btn--wishlist">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                    </svg>
+                                    <f:translate key="detail.wishlist.add" extensionName="DigitalCatalog" />
+                                </button>
+                            </f:form>
+                        </f:else>
+                    </f:if>
+                    <a href="{f:uri.page(pageUid: settings.wishlistPageUid)}" class="dc-btn dc-btn--outline">
+                        <f:translate key="detail.wishlist.view" extensionName="DigitalCatalog" />
+                    </a>
+                </div>
+
+                <f:if condition="{article.gtins}">
+                    <div class="dc-detail__meta">
+                        <h3 class="dc-detail__meta-title"><f:translate key="detail.gtin" extensionName="DigitalCatalog" /></h3>
+                        <ul class="dc-detail__gtin-list">
+                            <f:for each="{article.gtins}" as="gtin">
+                                <li class="dc-detail__gtin">{gtin.number}</li>
+                            </f:for>
+                        </ul>
+                    </div>
+                </f:if>
+
+            </div>
+        </div>
+
+        <!-- Documents for current page language -->
+        <div class="dc-docs-section">
+            <div class="dc-docs-section__header">
+                <h2 class="dc-docs-section__title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
+                    </svg>
+                    <f:translate key="docs.title" extensionName="DigitalCatalog" />
+                </h2>
+                <f:if condition="{eifuPageUid}">
+                    <a href="{f:uri.page(pageUid: eifuPageUid)}" class="dc-btn dc-btn--outline dc-btn--sm" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                        <f:translate key="docs.portal.link" extensionName="DigitalCatalog" />
+                    </a>
+                </f:if>
+            </div>
+
+            <f:if condition="{documents}">
+                <f:then>
+                    <div class="dc-docs-list">
+                        <f:for each="{documents}" as="doc">
+                            <div class="dc-doc-item">
+                                <div class="dc-doc-item__icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
+                                    </svg>
+                                </div>
+                                <div class="dc-doc-item__info">
+                                    <p class="dc-doc-item__title">{doc.title}</p>
+                                    <div class="dc-doc-item__meta">
+                                        <f:if condition="{doc.version}">
+                                            <span class="dc-doc-item__version">v{doc.version}</span>
+                                        </f:if>
+                                        <f:if condition="{doc.publishingDate}">
+                                            <span class="dc-doc-item__date">
+                                                <f:format.date format="d.m.Y">{doc.publishingDate}</f:format.date>
+                                            </span>
+                                        </f:if>
+                                        <f:if condition="{doc.documentType}">
+                                            <span class="dc-tag dc-tag--sm">{doc.documentType.title}</span>
+                                        </f:if>
+                                    </div>
+                                </div>
+                                <div class="dc-doc-item__actions">
+                                    <f:if condition="{doc.file}">
+                                        <a href="{doc.file.originalResource.publicUrl}"
+                                           class="dc-btn dc-btn--sm dc-btn--outline"
+                                           target="_blank"
+                                           rel="noopener"
+                                           download>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                            </svg>
+                                            <f:translate key="docs.download.pdf" extensionName="DigitalCatalog" />
+                                        </a>
+                                    </f:if>
+                                    <f:if condition="{eifuPortalBaseUrl}">
+                                        <a href="{eifuPortalBaseUrl}/en/resources/eifu"
+                                           class="dc-btn dc-btn--sm dc-btn--ghost"
+                                           target="_blank"
+                                           rel="noopener">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                            </svg>
+                                            <f:translate key="docs.eifu.link" extensionName="DigitalCatalog" />
+                                        </a>
+                                    </f:if>
+                                </div>
+                            </div>
+                        </f:for>
+                    </div>
+                </f:then>
+                <f:else>
+                    <p class="dc-docs-empty"><f:translate key="docs.none" extensionName="DigitalCatalog" /></p>
+                </f:else>
+            </f:if>
+        </div>
+
+    </div>
+
+</f:section>
+</html>

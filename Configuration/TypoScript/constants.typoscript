@@ -1,0 +1,10 @@
+plugin.tx_digitalcatalog_catalog {
+    settings {
+        storagePid = 293
+        itemsPerPage = 24
+        catalogPageUid = 6423
+        wishlistPageUid = 6425
+        eifuPageUid = 0
+        eifuPortalBaseUrl = https://medartis.com
+    }
+}

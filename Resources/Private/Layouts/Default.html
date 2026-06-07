@@ -1,0 +1,26 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:asset.css identifier="tx-digitalcatalog-css" href="EXT:digital_catalog/Resources/Public/Css/catalog.css" />
+<f:asset.script identifier="tx-digitalcatalog-js" src="EXT:digital_catalog/Resources/Public/JavaScript/catalog.js" useNonce="1" />
+
+<div class="dc-catalog">
+    <f:flashMessages as="flashMessages">
+        <f:for each="{flashMessages}" as="flashMessage">
+            <div class="dc-flash dc-flash--{flashMessage.severityLabel}">
+                <span class="dc-flash__icon">
+                    <f:if condition="{flashMessage.severity} == 0"><i class="dc-icon dc-icon--check"></i></f:if>
+                    <f:if condition="{flashMessage.severity} == 2"><i class="dc-icon dc-icon--warning"></i></f:if>
+                </span>
+                <div>
+                    <strong>{flashMessage.title}</strong>
+                    <p>{flashMessage.message}</p>
+                </div>
+            </div>
+        </f:for>
+    </f:flashMessages>
+
+    <f:render section="Main" />
+</div>
+
+</html>

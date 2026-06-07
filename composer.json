@@ -1,0 +1,27 @@
+{
+    "name": "medartis/digital-catalog",
+    "type": "typo3-cms-extension",
+    "description": "Medartis Digital Product Catalog with Wishlist",
+    "authors": [
+        {
+            "name": "aistea",
+            "role": "Developer"
+        }
+    ],
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "typo3/cms-core": "^13.1",
+        "medartis/doc-manager": "@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Medartis\\DigitalCatalog\\": "Classes"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "web-dir": ".Build/public",
+            "extension-key": "digital_catalog"
+        }
+    }
+}

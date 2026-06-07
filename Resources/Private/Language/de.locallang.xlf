@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages">
+        <body>
+            <trans-unit id="catalog.title"><source>Product Catalog</source><target>Produktkatalog</target></trans-unit>
+            <trans-unit id="catalog.subtitle"><source>products</source><target>Produkte</target></trans-unit>
+            <trans-unit id="filter.search.placeholder"><source>Search product or article number …</source><target>Produkt oder Artikelnummer suchen …</target></trans-unit>
+            <trans-unit id="filter.system.all"><source>All Systems</source><target>Alle Systeme</target></trans-unit>
+            <trans-unit id="filter.bodyregion.all"><source>All Body Regions</source><target>Alle Körperregionen</target></trans-unit>
+            <trans-unit id="filter.btn.filter"><source>Filter</source><target>Filtern</target></trans-unit>
+            <trans-unit id="filter.btn.reset"><source>Reset</source><target>Zurücksetzen</target></trans-unit>
+            <trans-unit id="results.products"><source>Products found</source><target>Produkte gefunden</target></trans-unit>
+            <trans-unit id="results.page"><source>Page</source><target>Seite</target></trans-unit>
+            <trans-unit id="results.of"><source>of</source><target>von</target></trans-unit>
+            <trans-unit id="results.empty"><source>No products found for your search.</source><target>Keine Produkte für Ihre Suche gefunden.</target></trans-unit>
+            <trans-unit id="results.show.all"><source>Show all products</source><target>Alle Produkte anzeigen</target></trans-unit>
+            <trans-unit id="card.details"><source>Details</source><target>Details</target></trans-unit>
+            <trans-unit id="card.placeholder"><source>No image</source><target>Kein Bild</target></trans-unit>
+            <trans-unit id="card.wishlist.add"><source>Add to wishlist</source><target>Zur Merkliste hinzufügen</target></trans-unit>
+            <trans-unit id="detail.back"><source>Back to catalog</source><target>Zurück zum Katalog</target></trans-unit>
+            <trans-unit id="detail.article.number"><source>Art. No.:</source><target>Art. Nr.:</target></trans-unit>
+            <trans-unit id="detail.placeholder"><source>No image available</source><target>Kein Bild verfügbar</target></trans-unit>
+            <trans-unit id="detail.gtin"><source>GTIN / EAN</source><target>GTIN / EAN</target></trans-unit>
+            <trans-unit id="detail.wishlist.add"><source>Add to wishlist</source><target>Zur Merkliste</target></trans-unit>
+            <trans-unit id="detail.wishlist.remove"><source>Remove from wishlist</source><target>Von Merkliste entfernen</target></trans-unit>
+            <trans-unit id="detail.wishlist.view"><source>View wishlist</source><target>Merkliste ansehen</target></trans-unit>
+            <trans-unit id="docs.title"><source>Available Documents (eIFU)</source><target>Verfügbare Dokumente (eIFU)</target></trans-unit>
+            <trans-unit id="docs.portal.link"><source>Open in eIFU Portal</source><target>Im eIFU Portal öffnen</target></trans-unit>
+            <trans-unit id="docs.download.pdf"><source>PDF</source><target>PDF</target></trans-unit>
+            <trans-unit id="docs.eifu.link"><source>eIFU</source><target>eIFU</target></trans-unit>
+            <trans-unit id="docs.none"><source>No documents available for this language.</source><target>Keine Dokumente für diese Sprache verfügbar.</target></trans-unit>
+            <trans-unit id="wishlist.title"><source>Wishlist</source><target>Merkliste</target></trans-unit>
+            <trans-unit id="wishlist.back"><source>Back to catalog</source><target>Zurück zum Katalog</target></trans-unit>
+            <trans-unit id="wishlist.products.title"><source>Selected Products</source><target>Ausgewählte Produkte</target></trans-unit>
+            <trans-unit id="wishlist.empty"><source>Your wishlist is empty.</source><target>Ihre Merkliste ist noch leer.</target></trans-unit>
+            <trans-unit id="wishlist.discover"><source>Discover products</source><target>Produkte entdecken</target></trans-unit>
+            <trans-unit id="wishlist.remove"><source>Remove</source><target>Entfernen</target></trans-unit>
+            <trans-unit id="inquiry.title"><source>Request now</source><target>Jetzt anfragen</target></trans-unit>
+            <trans-unit id="inquiry.desc"><source>Fill out the form and we will send you further information about the selected products.</source><target>Füllen Sie das Formular aus und wir senden Ihnen weitere Informationen zu den ausgewählten Produkten.</target></trans-unit>
+            <trans-unit id="inquiry.name"><source>Name</source><target>Name</target></trans-unit>
+            <trans-unit id="inquiry.name.placeholder"><source>Your full name</source><target>Ihr vollständiger Name</target></trans-unit>
+            <trans-unit id="inquiry.email"><source>E-Mail</source><target>E-Mail</target></trans-unit>
+            <trans-unit id="inquiry.email.placeholder"><source>your@email.com</source><target>ihre@email.com</target></trans-unit>
+            <trans-unit id="inquiry.company"><source>Company / Clinic</source><target>Unternehmen / Klinik</target></trans-unit>
+            <trans-unit id="inquiry.company.placeholder"><source>Your company (optional)</source><target>Ihr Unternehmen (optional)</target></trans-unit>
+            <trans-unit id="inquiry.message"><source>Message</source><target>Nachricht</target></trans-unit>
+            <trans-unit id="inquiry.message.placeholder"><source>Your message or specific questions …</source><target>Ihre Nachricht oder spezifische Fragen …</target></trans-unit>
+            <trans-unit id="inquiry.privacy"><source>I agree to the processing of my data in accordance with the privacy policy.</source><target>Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu.</target></trans-unit>
+            <trans-unit id="inquiry.submit"><source>Send request</source><target>Anfrage senden</target></trans-unit>
+            <trans-unit id="inquiry.required"><source>required</source><target>Pflichtfeld</target></trans-unit>
+            <trans-unit id="submitted.title"><source>Request sent successfully!</source><target>Anfrage erfolgreich gesendet!</target></trans-unit>
+            <trans-unit id="submitted.desc"><source>We have received your request and will get back to you shortly.</source><target>Wir haben Ihre Anfrage erhalten und melden uns in Kürze bei Ihnen.</target></trans-unit>
+            <trans-unit id="submitted.browse"><source>Continue browsing</source><target>Weiter stöbern</target></trans-unit>
+            <trans-unit id="wishlist.qty"><source>Qty</source><target>Menge</target></trans-unit>
+            <trans-unit id="wishlist.btn.label"><source>Wishlist</source><target>Merkliste</target></trans-unit>
+            <trans-unit id="email.subject"><source>Product Inquiry</source><target>Product Inquiry</target></trans-unit>
+            <trans-unit id="email.intro"><source>A new product inquiry has been submitted via the Digital Catalog.</source><target>Eine neue Produktanfrage wurde über den Digital Catalog eingereicht.</target></trans-unit>
+            <trans-unit id="email.sender.title"><source>Contact Details</source><target>Kontaktdaten</target></trans-unit>
+            <trans-unit id="email.sender.name"><source>Name</source><target>Name</target></trans-unit>
+            <trans-unit id="email.sender.email"><source>E-Mail</source><target>E-Mail</target></trans-unit>
+            <trans-unit id="email.sender.company"><source>Company / Clinic</source><target>Unternehmen / Klinik</target></trans-unit>
+            <trans-unit id="email.sender.message"><source>Message</source><target>Nachricht</target></trans-unit>
+            <trans-unit id="email.products.title"><source>Requested Products</source><target>Angefragte Produkte</target></trans-unit>
+            <trans-unit id="email.products.col.qty"><source>Qty</source><target>Menge</target></trans-unit>
+            <trans-unit id="email.products.col.name"><source>Product</source><target>Produkt</target></trans-unit>
+            <trans-unit id="email.products.col.number"><source>Art. No.</source><target>Art. Nr.</target></trans-unit>
+            <trans-unit id="email.products.col.systems"><source>Systems</source><target>Systeme</target></trans-unit>
+            <trans-unit id="email.attachment.hint"><source>An Excel file with all products is attached to this email.</source><target>Eine Excel-Datei mit allen Produkten ist dieser E-Mail als Anhang beigefügt.</target></trans-unit>
+            <trans-unit id="email.footer"><source>This message was generated automatically by the Digital Catalog.</source><target>Diese Nachricht wurde automatisch vom Digital Catalog generiert.</target></trans-unit>
+            <trans-unit id="email.excel.sheetname"><source>Products</source><target>Produkte</target></trans-unit>
+        </body>
+    </file>
+</xliff>

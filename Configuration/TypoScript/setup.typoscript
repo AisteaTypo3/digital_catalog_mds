@@ -1,0 +1,46 @@
+plugin.tx_digitalcatalog_catalog {
+    settings {
+        storagePid = {$plugin.tx_digitalcatalog_catalog.settings.storagePid}
+        itemsPerPage = {$plugin.tx_digitalcatalog_catalog.settings.itemsPerPage}
+        catalogPageUid = {$plugin.tx_digitalcatalog_catalog.settings.catalogPageUid}
+        wishlistPageUid = {$plugin.tx_digitalcatalog_catalog.settings.wishlistPageUid}
+        eifuPageUid = {$plugin.tx_digitalcatalog_catalog.settings.eifuPageUid}
+        eifuPortalBaseUrl = {$plugin.tx_digitalcatalog_catalog.settings.eifuPortalBaseUrl}
+    }
+    view {
+        templateRootPaths {
+            0 = EXT:digital_catalog/Resources/Private/Templates/
+        }
+        partialRootPaths {
+            0 = EXT:digital_catalog/Resources/Private/Partials/
+        }
+        layoutRootPaths {
+            0 = EXT:digital_catalog/Resources/Private/Layouts/
+        }
+    }
+    persistence {
+        storagePid = {$plugin.tx_digitalcatalog_catalog.settings.storagePid}
+    }
+}
+
+plugin.tx_digitalcatalog_wishlist {
+    settings {
+        storagePid = {$plugin.tx_digitalcatalog_catalog.settings.storagePid}
+        catalogPageUid = {$plugin.tx_digitalcatalog_catalog.settings.catalogPageUid}
+        wishlistPageUid = {$plugin.tx_digitalcatalog_catalog.settings.wishlistPageUid}
+    }
+    view {
+        templateRootPaths {
+            0 = EXT:digital_catalog/Resources/Private/Templates/
+        }
+        partialRootPaths {
+            0 = EXT:digital_catalog/Resources/Private/Partials/
+        }
+        layoutRootPaths {
+            0 = EXT:digital_catalog/Resources/Private/Layouts/
+        }
+    }
+    persistence {
+        storagePid = {$plugin.tx_digitalcatalog_catalog.settings.storagePid}
+    }
+}
