@@ -13,8 +13,8 @@ if (!defined('TYPO3')) {
     ExtensionUtility::configurePlugin(
         'DigitalCatalog',
         'Catalog',
-        [CatalogController::class => 'list, show, addToWishlist, removeFromWishlist, toggleWishlist'],
-        [CatalogController::class => 'list, show, addToWishlist, removeFromWishlist, toggleWishlist'],
+        [CatalogController::class => 'list, show, suggest, addToWishlist, removeFromWishlist, toggleWishlist'],
+        [CatalogController::class => 'suggest, addToWishlist, removeFromWishlist, toggleWishlist'],
         null
     );
 

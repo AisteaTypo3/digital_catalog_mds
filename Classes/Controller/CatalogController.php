@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Medartis\DigitalCatalog\Controller;
 
 use GeorgRinger\NumberedPagination\NumberedPagination;
+use Medartis\DigitalCatalog\Service\ProductDocumentationService;
 use Medartis\DigitalCatalog\Service\WishlistService;
 use Medartis\DocManager\Domain\Model\Article;
 use Medartis\DocManager\Domain\Repository\ArticleRepository;
@@ -12,6 +13,7 @@ use Medartis\DocManager\Domain\Repository\SystemRepository;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
@@ -23,14 +25,15 @@ class CatalogController extends ActionController
     public function __construct(
         private readonly ArticleRepository $articleRepository,
         private readonly SystemRepository $systemRepository,
+        private readonly ProductDocumentationService $productDocumentationService,
         private readonly WishlistService $wishlistService,
     ) {}
 
     public function listAction(): ResponseInterface
     {
-        $search = trim($this->request->hasArgument('search') ? (string)$this->request->getArgument('search') : '');
-        $systemFilter = $this->request->hasArgument('system') ? (int)$this->request->getArgument('system') : 0;
-        $currentPage = $this->request->hasArgument('currentPage') ? max(1, (int)$this->request->getArgument('currentPage')) : 1;
+        $search = trim($this->resolveStringArgument('search'));
+        $systemFilter = $this->resolveIntArgument('system', 0);
+        $currentPage = $this->resolveIntArgument('currentPage', 1, 1);
         $storagePid = (int)($this->settings['storagePid'] ?? 0);
         $itemsPerPage = (int)($this->settings['itemsPerPage'] ?? 24);
 
@@ -86,6 +89,66 @@ class CatalogController extends ActionController
         return $this->htmlResponse();
     }
 
+    public function suggestAction(): ResponseInterface
+    {
+        $term = trim($this->resolveStringArgument('term'));
+        $systemFilter = $this->resolveIntArgument('system', 0);
+        $storagePid = (int)($this->settings['storagePid'] ?? 0);
+
+        if (mb_strlen($term) < 2) {
+            throw new PropagateResponseException(
+                $this->jsonResponse((string)json_encode([
+                    'items' => [],
+                ])),
+                1
+            );
+        }
+
+        $query = $this->articleRepository->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage($storagePid > 0);
+        if ($storagePid > 0) {
+            $query->getQuerySettings()->setStoragePageIds([$storagePid]);
+        }
+
+        $constraints = [
+            $query->logicalOr(
+                $query->like('productName', '%' . $term . '%'),
+                $query->like('articleNumber', '%' . $term . '%')
+            ),
+        ];
+
+        if ($systemFilter > 0) {
+            $system = $this->systemRepository->findByUid($systemFilter);
+            if ($system !== null) {
+                $constraints[] = $query->contains('systems', $system);
+            }
+        }
+
+        $query->matching(count($constraints) > 1 ? $query->logicalAnd(...$constraints) : $constraints[0]);
+        $query->setOrderings([
+            'productName' => QueryInterface::ORDER_ASCENDING,
+            'articleNumber' => QueryInterface::ORDER_ASCENDING,
+        ]);
+        $query->setLimit(8);
+
+        $items = [];
+        foreach ($query->execute() as $article) {
+            $items[] = [
+                'uid' => $article->getUid(),
+                'title' => $article->getProductName(),
+                'articleNumber' => $article->getArticleNumber(),
+                'url' => $this->buildCatalogDetailUri($article),
+            ];
+        }
+
+        throw new PropagateResponseException(
+            $this->jsonResponse((string)json_encode([
+                'items' => $items,
+            ])),
+            1
+        );
+    }
+
     public function showAction(Article $article): ResponseInterface
     {
         $wishlistUids = $this->wishlistService->getWishlist();
@@ -104,9 +167,18 @@ class CatalogController extends ActionController
             }
         }
 
+        $productDocuments = $this->productDocumentationService->findBySystems(
+            array_map(
+                static fn($system): string => $system->getTitle(),
+                iterator_to_array($article->getSystems())
+            ),
+            $pageLocale
+        );
+
         $this->view->assignMultiple([
             'article' => $article,
             'documents' => $documents,
+            'productDocuments' => $productDocuments,
             'pageLocale' => $pageLocale,
             'isInWishlist' => in_array($article->getUid(), $wishlistUids, true),
             'eifuPortalBaseUrl' => rtrim($this->settings['eifuPortalBaseUrl'] ?? 'https://medartis.com', '/'),
@@ -237,6 +309,100 @@ class CatalogController extends ActionController
         $this->wishlistService->clearWishlist();
 
         return $this->redirect('wishlist', null, null, ['submitted' => 1]);
+    }
+
+    private function resolveStringArgument(string $name, string $default = ''): string
+    {
+        if ($this->request->hasArgument($name)) {
+            return (string)$this->request->getArgument($name);
+        }
+
+        $pluginArguments = $this->getPluginQueryArguments();
+        if (isset($pluginArguments[$name])) {
+            return (string)$pluginArguments[$name];
+        }
+
+        $routeArguments = $this->getRouteArguments();
+        if (isset($routeArguments[$name])) {
+            return (string)$routeArguments[$name];
+        }
+
+        $queryParams = $this->request->getQueryParams();
+        if (isset($queryParams[$name])) {
+            return (string)$queryParams[$name];
+        }
+
+        $pathArguments = $this->getArgumentsFromRequestPath();
+        if (isset($pathArguments[$name])) {
+            return (string)$pathArguments[$name];
+        }
+
+        return $default;
+    }
+
+    private function resolveIntArgument(string $name, int $default = 0, int $minimum = 0): int
+    {
+        $value = $this->resolveStringArgument($name, (string)$default);
+        return max($minimum, (int)$value);
+    }
+
+    private function getPluginQueryArguments(): array
+    {
+        $queryParams = $this->request->getQueryParams();
+        $pluginArguments = $queryParams['tx_digitalcatalog_catalog'] ?? [];
+        return is_array($pluginArguments) ? $pluginArguments : [];
+    }
+
+    private function getRouteArguments(): array
+    {
+        $routing = $this->request->getAttribute('routing');
+        if ($routing instanceof PageArguments) {
+            $pluginArguments = $routing->get('tx_digitalcatalog_catalog');
+            if (is_array($pluginArguments)) {
+                return $pluginArguments;
+            }
+
+            $arguments = $routing->getArguments();
+            return is_array($arguments) ? $arguments : [];
+        }
+
+        return [];
+    }
+
+    private function getArgumentsFromRequestPath(): array
+    {
+        $path = $this->request->getUri()->getPath();
+        $arguments = [];
+
+        if (preg_match('#/page-(\d+)$#', $path, $matches) === 1) {
+            $arguments['currentPage'] = $matches[1];
+        }
+
+        if (preg_match('#/system/(\d+)#', $path, $matches) === 1) {
+            $arguments['system'] = $matches[1];
+        }
+
+        return $arguments;
+    }
+
+    private function buildCatalogDetailUri(Article $article): string
+    {
+        $catalogPageUid = (int)($this->settings['catalogPageUid'] ?? 0);
+        $uriBuilder = $this->uriBuilder
+            ->reset()
+            ->setCreateAbsoluteUri(false);
+
+        if ($catalogPageUid > 0) {
+            $uriBuilder->setTargetPageUid($catalogPageUid);
+        }
+
+        return $uriBuilder->uriFor(
+            'show',
+            ['article' => $article],
+            'Catalog',
+            'DigitalCatalog',
+            'Catalog'
+        );
     }
 
     /**

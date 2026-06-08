@@ -28,6 +28,11 @@
                         <span class="dc-tag dc-tag--sm">{system.title}</span>
                     </f:if>
                 </f:for>
+                <f:if condition="{article.systems -> f:count()} > 2">
+                    <span class="dc-tag dc-tag--sm" title="{f:translate(key: 'card.systems.more', extensionName: 'DigitalCatalog')}">
+                        +{article.systems -> f:count()}
+                    </span>
+                </f:if>
             </div>
         </f:if>
     </a>

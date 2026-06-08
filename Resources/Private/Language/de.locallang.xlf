@@ -9,6 +9,9 @@
             <trans-unit id="filter.bodyregion.all"><source>All Body Regions</source><target>Alle Körperregionen</target></trans-unit>
             <trans-unit id="filter.btn.filter"><source>Filter</source><target>Filtern</target></trans-unit>
             <trans-unit id="filter.btn.reset"><source>Reset</source><target>Zurücksetzen</target></trans-unit>
+            <trans-unit id="autocomplete.loading"><source>Loading suggestions ...</source><target>Vorschläge werden geladen ...</target></trans-unit>
+            <trans-unit id="autocomplete.empty"><source>No matching products found.</source><target>Keine passenden Produkte gefunden.</target></trans-unit>
+            <trans-unit id="autocomplete.articles"><source>Art. No.</source><target>Art. Nr.</target></trans-unit>
             <trans-unit id="results.products"><source>Products found</source><target>Produkte gefunden</target></trans-unit>
             <trans-unit id="results.page"><source>Page</source><target>Seite</target></trans-unit>
             <trans-unit id="results.of"><source>of</source><target>von</target></trans-unit>
@@ -17,6 +20,7 @@
             <trans-unit id="card.details"><source>Details</source><target>Details</target></trans-unit>
             <trans-unit id="card.placeholder"><source>No image</source><target>Kein Bild</target></trans-unit>
             <trans-unit id="card.wishlist.add"><source>Add to wishlist</source><target>Zur Merkliste hinzufügen</target></trans-unit>
+            <trans-unit id="card.systems.more"><source>More</source><target>Weitere</target></trans-unit>
             <trans-unit id="detail.back"><source>Back to catalog</source><target>Zurück zum Katalog</target></trans-unit>
             <trans-unit id="detail.article.number"><source>Art. No.:</source><target>Art. Nr.:</target></trans-unit>
             <trans-unit id="detail.placeholder"><source>No image available</source><target>Kein Bild verfügbar</target></trans-unit>
@@ -29,6 +33,8 @@
             <trans-unit id="docs.download.pdf"><source>PDF</source><target>PDF</target></trans-unit>
             <trans-unit id="docs.eifu.link"><source>eIFU</source><target>eIFU</target></trans-unit>
             <trans-unit id="docs.none"><source>No documents available for this language.</source><target>Keine Dokumente für diese Sprache verfügbar.</target></trans-unit>
+            <trans-unit id="productDocs.title"><source>Product Documentation</source><target>Produktdokumentation</target></trans-unit>
+            <trans-unit id="productDocs.none"><source>No product documentation available for this language.</source><target>Keine Produktdokumentation für diese Sprache verfügbar.</target></trans-unit>
             <trans-unit id="wishlist.title"><source>Wishlist</source><target>Merkliste</target></trans-unit>
             <trans-unit id="wishlist.back"><source>Back to catalog</source><target>Zurück zum Katalog</target></trans-unit>
             <trans-unit id="wishlist.products.title"><source>Selected Products</source><target>Ausgewählte Produkte</target></trans-unit>

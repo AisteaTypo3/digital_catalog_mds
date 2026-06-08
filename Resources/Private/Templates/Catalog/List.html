@@ -32,10 +32,18 @@
                     <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z" />
                 </svg>
                 <input type="text"
+                       id="dc-filter-search"
                        name="tx_digitalcatalog_catalog[search]"
                        value="{search}"
                        class="dc-filter__search"
+                       autocomplete="off"
+                       data-autocomplete-endpoint="{f:uri.page(pageUid: settings.catalogPageUid)}"
+                       data-system-filter="{systemFilter}"
+                       data-loading-label="{f:translate(key: 'autocomplete.loading', extensionName: 'DigitalCatalog')}"
+                       data-empty-label="{f:translate(key: 'autocomplete.empty', extensionName: 'DigitalCatalog')}"
+                       data-articles-label="{f:translate(key: 'autocomplete.articles', extensionName: 'DigitalCatalog')}"
                        placeholder="{f:translate(key: 'filter.search.placeholder', extensionName: 'DigitalCatalog')}" />
+                <div class="dc-autocomplete" id="dc-autocomplete" hidden></div>
             </div>
             <div class="dc-filter__selects">
                 <div class="dc-filter__select-wrap">

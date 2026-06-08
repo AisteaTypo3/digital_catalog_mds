@@ -164,6 +164,182 @@
         });
     }
 
+    function initAutocomplete() {
+        const searchInput = document.getElementById('dc-filter-search');
+        const form = document.querySelector('.dc-filter__form');
+        const panel = document.getElementById('dc-autocomplete');
+        if (!searchInput || !form || !panel || !searchInput.dataset.autocompleteEndpoint) return;
+
+        const endpoint = searchInput.dataset.autocompleteEndpoint;
+        const systemFilter = searchInput.dataset.systemFilter || '0';
+        const loadingLabel = searchInput.dataset.loadingLabel || 'Loading...';
+        const emptyLabel = searchInput.dataset.emptyLabel || 'No results found.';
+        const articlesLabel = searchInput.dataset.articlesLabel || 'Art. No.';
+        let debounceTimer = null;
+        let abortController = null;
+        let activeIndex = -1;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function getItems() {
+            return Array.prototype.slice.call(panel.querySelectorAll('.dc-autocomplete__item'));
+        }
+
+        function closePanel() {
+            panel.hidden = true;
+            panel.innerHTML = '';
+            panel.classList.remove('dc-autocomplete--open');
+            activeIndex = -1;
+            searchInput.setAttribute('aria-expanded', 'false');
+        }
+
+        function openPanel() {
+            panel.hidden = false;
+            panel.classList.add('dc-autocomplete--open');
+            searchInput.setAttribute('aria-expanded', 'true');
+        }
+
+        function setActiveItem(index) {
+            const items = getItems();
+            activeIndex = items.length ? Math.max(0, Math.min(index, items.length - 1)) : -1;
+            items.forEach(function (item, itemIndex) {
+                item.classList.toggle('is-active', itemIndex === activeIndex);
+            });
+        }
+
+        function renderLoading() {
+            panel.innerHTML = '<div class="dc-autocomplete__status">' + escapeHtml(loadingLabel) + '</div>';
+            openPanel();
+        }
+
+        function renderEmpty() {
+            panel.innerHTML = '<div class="dc-autocomplete__status">' + escapeHtml(emptyLabel) + '</div>';
+            openPanel();
+        }
+
+        function renderItems(items) {
+            if (!items.length) {
+                renderEmpty();
+                return;
+            }
+
+            panel.innerHTML = items.map(function (item, index) {
+                return (
+                    '<a class="dc-autocomplete__item' + (index === 0 ? ' is-active' : '') + '" ' +
+                    'href="' + escapeHtml(item.url) + '" ' +
+                    'data-index="' + index + '">' +
+                        '<span class="dc-autocomplete__title">' + escapeHtml(item.title) + '</span>' +
+                        '<span class="dc-autocomplete__meta">' + escapeHtml(articlesLabel) + ' ' + escapeHtml(item.articleNumber) + '</span>' +
+                    '</a>'
+                );
+            }).join('');
+
+            activeIndex = 0;
+            openPanel();
+        }
+
+        function fetchSuggestions() {
+            const term = searchInput.value.trim();
+            if (term.length < 2) {
+                closePanel();
+                return;
+            }
+
+            if (abortController) {
+                abortController.abort();
+            }
+
+            abortController = new AbortController();
+            renderLoading();
+
+            const payload = new FormData();
+            payload.set('tx_digitalcatalog_catalog[action]', 'suggest');
+            payload.set('tx_digitalcatalog_catalog[controller]', 'Catalog');
+            payload.set('tx_digitalcatalog_catalog[term]', term);
+            payload.set('tx_digitalcatalog_catalog[system]', systemFilter);
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: payload,
+                signal: abortController.signal,
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        return Promise.reject();
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    renderItems(Array.isArray(data.items) ? data.items : []);
+                })
+                .catch(function (error) {
+                    if (error && error.name === 'AbortError') {
+                        return;
+                    }
+                    closePanel();
+                });
+        }
+
+        searchInput.setAttribute('aria-autocomplete', 'list');
+        searchInput.setAttribute('aria-expanded', 'false');
+        searchInput.setAttribute('aria-controls', 'dc-autocomplete');
+
+        searchInput.addEventListener('input', function () {
+            window.clearTimeout(debounceTimer);
+            debounceTimer = window.setTimeout(fetchSuggestions, 220);
+        });
+
+        searchInput.addEventListener('keydown', function (event) {
+            const items = getItems();
+            if (!items.length || panel.hidden) {
+                return;
+            }
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setActiveItem(activeIndex + 1);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setActiveItem(activeIndex - 1);
+            } else if (event.key === 'Enter' && activeIndex >= 0) {
+                event.preventDefault();
+                items[activeIndex].click();
+            } else if (event.key === 'Escape') {
+                closePanel();
+            }
+        });
+
+        searchInput.addEventListener('focus', function () {
+            if (searchInput.value.trim().length >= 2 && panel.innerHTML.trim() !== '') {
+                openPanel();
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!panel.contains(event.target) && event.target !== searchInput) {
+                closePanel();
+            }
+        });
+
+        panel.addEventListener('mousemove', function (event) {
+            const item = event.target.closest('.dc-autocomplete__item');
+            if (!item) return;
+            setActiveItem(parseInt(item.dataset.index || '-1', 10));
+        });
+
+        form.addEventListener('submit', function () {
+            closePanel();
+        });
+    }
+
     // Quantity stepper: AJAX update, no page reload
     function initQtySteppers() {
         document.querySelectorAll('.js-qty-form').forEach(function (form) {
@@ -261,6 +437,7 @@
         syncCardStates();
         initWishlistToggles();
         initFilterForm();
+        initAutocomplete();
         initQtySteppers();
         initSearchHighlight();
         initDocTabs();

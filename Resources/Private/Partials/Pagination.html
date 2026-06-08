@@ -5,25 +5,104 @@
     <nav class="dc-pagination" aria-label="Seitennavigation">
 
         <f:if condition="{pagination.previousPageNumber}">
-            <f:link.action action="list"
-                arguments="{currentPage: pagination.previousPageNumber, search: search, system: systemFilter}"
-                class="dc-pagination__btn dc-pagination__btn--prev"
-                aria-label="Vorherige Seite">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M15.75 19.5 8.25 12l7.5-7.5" />
-                </svg>
-            </f:link.action>
+            <f:if condition="{search}">
+                <f:then>
+                    <f:if condition="{systemFilter}">
+                        <f:then>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.previousPageNumber, search: search, system: systemFilter}"
+                                class="dc-pagination__btn dc-pagination__btn--prev"
+                                aria-label="Vorherige Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:then>
+                        <f:else>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.previousPageNumber, search: search}"
+                                class="dc-pagination__btn dc-pagination__btn--prev"
+                                aria-label="Vorherige Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:else>
+                    </f:if>
+                </f:then>
+                <f:else>
+                    <f:if condition="{systemFilter}">
+                        <f:then>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.previousPageNumber, system: systemFilter}"
+                                class="dc-pagination__btn dc-pagination__btn--prev"
+                                aria-label="Vorherige Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:then>
+                        <f:else>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.previousPageNumber}"
+                                class="dc-pagination__btn dc-pagination__btn--prev"
+                                aria-label="Vorherige Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:else>
+                    </f:if>
+                </f:else>
+            </f:if>
         </f:if>
 
         <div class="dc-pagination__pages">
             <f:for each="{pagination.allPageNumbers}" as="page">
                 <f:if condition="{page}">
                     <f:then>
-                        <f:link.action action="list"
-                            arguments="{currentPage: page, search: search, system: systemFilter}"
-                            class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}">
-                            {page}
-                        </f:link.action>
+                        <f:if condition="{search}">
+                            <f:then>
+                                <f:if condition="{systemFilter}">
+                                    <f:then>
+                                        <f:link.action action="list"
+                                            arguments="{currentPage: page, search: search, system: systemFilter}"
+                                            class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
+                                            aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
+                                            {page}
+                                        </f:link.action>
+                                    </f:then>
+                                    <f:else>
+                                        <f:link.action action="list"
+                                            arguments="{currentPage: page, search: search}"
+                                            class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
+                                            aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
+                                            {page}
+                                        </f:link.action>
+                                    </f:else>
+                                </f:if>
+                            </f:then>
+                            <f:else>
+                                <f:if condition="{systemFilter}">
+                                    <f:then>
+                                        <f:link.action action="list"
+                                            arguments="{currentPage: page, system: systemFilter}"
+                                            class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
+                                            aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
+                                            {page}
+                                        </f:link.action>
+                                    </f:then>
+                                    <f:else>
+                                        <f:link.action action="list"
+                                            arguments="{currentPage: page}"
+                                            class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
+                                            aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
+                                            {page}
+                                        </f:link.action>
+                                    </f:else>
+                                </f:if>
+                            </f:else>
+                        </f:if>
                     </f:then>
                     <f:else>
                         <span class="dc-pagination__ellipsis">…</span>
@@ -33,14 +112,56 @@
         </div>
 
         <f:if condition="{pagination.nextPageNumber}">
-            <f:link.action action="list"
-                arguments="{currentPage: pagination.nextPageNumber, search: search, system: systemFilter}"
-                class="dc-pagination__btn dc-pagination__btn--next"
-                aria-label="Nächste Seite">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                </svg>
-            </f:link.action>
+            <f:if condition="{search}">
+                <f:then>
+                    <f:if condition="{systemFilter}">
+                        <f:then>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.nextPageNumber, search: search, system: systemFilter}"
+                                class="dc-pagination__btn dc-pagination__btn--next"
+                                aria-label="Nächste Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:then>
+                        <f:else>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.nextPageNumber, search: search}"
+                                class="dc-pagination__btn dc-pagination__btn--next"
+                                aria-label="Nächste Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:else>
+                    </f:if>
+                </f:then>
+                <f:else>
+                    <f:if condition="{systemFilter}">
+                        <f:then>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.nextPageNumber, system: systemFilter}"
+                                class="dc-pagination__btn dc-pagination__btn--next"
+                                aria-label="Nächste Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:then>
+                        <f:else>
+                            <f:link.action action="list"
+                                arguments="{currentPage: pagination.nextPageNumber}"
+                                class="dc-pagination__btn dc-pagination__btn--next"
+                                aria-label="Nächste Seite">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </f:link.action>
+                        </f:else>
+                    </f:if>
+                </f:else>
+            </f:if>
         </f:if>
 
     </nav>

@@ -26,6 +26,15 @@
             <trans-unit id="filter.btn.reset">
                 <source>Reset</source>
             </trans-unit>
+            <trans-unit id="autocomplete.loading">
+                <source>Loading suggestions ...</source>
+            </trans-unit>
+            <trans-unit id="autocomplete.empty">
+                <source>No matching products found.</source>
+            </trans-unit>
+            <trans-unit id="autocomplete.articles">
+                <source>Art. No.</source>
+            </trans-unit>
 
             <!-- Results -->
             <trans-unit id="results.products">
@@ -53,6 +62,9 @@
             </trans-unit>
             <trans-unit id="card.wishlist.add">
                 <source>Add to wishlist</source>
+            </trans-unit>
+            <trans-unit id="card.systems.more">
+                <source>More</source>
             </trans-unit>
 
             <!-- Detail -->
@@ -93,6 +105,12 @@
             </trans-unit>
             <trans-unit id="docs.none">
                 <source>No documents available for this language.</source>
+            </trans-unit>
+            <trans-unit id="productDocs.title">
+                <source>Product Documentation</source>
+            </trans-unit>
+            <trans-unit id="productDocs.none">
+                <source>No product documentation available for this language.</source>
             </trans-unit>
 
             <!-- Wishlist page -->
