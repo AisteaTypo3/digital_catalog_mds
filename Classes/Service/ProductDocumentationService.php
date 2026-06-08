@@ -46,7 +46,8 @@ final class ProductDocumentationService
         private readonly ConnectionPool $connectionPool,
         private readonly FileCollectionRepository $fileCollectionRepository,
         private readonly Context $context,
-    ) {}
+    ) {
+    }
 
     /**
      * @param array<int, string> $systemTitles
@@ -94,7 +95,7 @@ final class ProductDocumentationService
         $documents = array_values($documents);
         usort(
             $documents,
-            static fn(array $left, array $right): int => [$left['fileType'], $left['title']] <=> [$right['fileType'], $right['title']]
+            static fn (array $left, array $right): int => [$left['fileType'], $left['title']] <=> [$right['fileType'], $right['title']]
         );
 
         return $documents;

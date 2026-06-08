@@ -109,7 +109,7 @@ class WishlistService implements SingletonInterface
         $siteEmail      = $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? 'noreply@medartis.com';
         $siteName       = $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromName'] ?? 'Medartis';
 
-        $t = fn(string $key): string =>
+        $t = fn (string $key): string =>
             LocalizationUtility::translate($key, 'DigitalCatalog', null, 'en') ?? $key;
 
         $inquiryRef  = 'DC-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 4));

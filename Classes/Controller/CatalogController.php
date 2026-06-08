@@ -34,7 +34,8 @@ class CatalogController extends ActionController
         private readonly SystemRepository $systemRepository,
         private readonly ProductDocumentationService $productDocumentationService,
         private readonly WishlistService $wishlistService,
-    ) {}
+    ) {
+    }
 
     public function listAction(): ResponseInterface
     {
@@ -194,7 +195,7 @@ class CatalogController extends ActionController
 
         $productDocuments = $this->productDocumentationService->findBySystems(
             array_map(
-                static fn($system): string => $system->getTitle(),
+                static fn ($system): string => $system->getTitle(),
                 iterator_to_array($article->getSystems())
             ),
             $pageLocale
@@ -600,7 +601,7 @@ class CatalogController extends ActionController
         }
 
         return array_map(
-            static fn(array $row): int => (int)$row['uid'],
+            static fn (array $row): int => (int)$row['uid'],
             $query->executeQuery()->fetchAllAssociative()
         );
     }
