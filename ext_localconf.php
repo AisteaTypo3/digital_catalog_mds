@@ -14,7 +14,7 @@ if (!defined('TYPO3')) {
         'DigitalCatalog',
         'Catalog',
         [CatalogController::class => 'list, show, suggest, addToWishlist, removeFromWishlist, toggleWishlist'],
-        [CatalogController::class => 'suggest, addToWishlist, removeFromWishlist, toggleWishlist'],
+        [CatalogController::class => 'list, suggest, addToWishlist, removeFromWishlist, toggleWishlist'],
         null
     );
 

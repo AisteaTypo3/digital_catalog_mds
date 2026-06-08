@@ -47,6 +47,18 @@
             </div>
             <div class="dc-filter__selects">
                 <div class="dc-filter__select-wrap">
+                    <select name="tx_digitalcatalog_catalog[bodyRegion]" id="dc-filter-bodyregion" class="dc-filter__select">
+                        <option value=""><f:translate key="filter.bodyregion.all" extensionName="DigitalCatalog" /></option>
+                        <option value="upper-extremities" {f:if(condition: '{bodyRegionSlug} == \'upper-extremities\'', then: 'selected="selected"')}>Upper Extremities</option>
+                        <option value="lower-extremities" {f:if(condition: '{bodyRegionSlug} == \'lower-extremities\'', then: 'selected="selected"')}>Lower Extremities</option>
+                        <option value="cmf" {f:if(condition: '{bodyRegionSlug} == \'cmf\'', then: 'selected="selected"')}>CMF</option>
+                        <option value="cmx" {f:if(condition: '{bodyRegionSlug} == \'cmx\'', then: 'selected="selected"')}>CMX</option>
+                    </select>
+                    <svg class="dc-filter__select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m19 9-7 7-7-7" />
+                    </svg>
+                </div>
+                <div class="dc-filter__select-wrap">
                     <select name="tx_digitalcatalog_catalog[system]" id="dc-filter-system" class="dc-filter__select">
                         <option value="0"><f:translate key="filter.system.all" extensionName="DigitalCatalog" /></option>
                         <f:for each="{systems}" as="system">
@@ -60,7 +72,7 @@
                     </svg>
                 </div>
                 <button type="submit" class="dc-filter__btn"><f:translate key="filter.btn.filter" extensionName="DigitalCatalog" /></button>
-                <f:if condition="{search} || {systemFilter}">
+                <f:if condition="{search} || {systemFilter} || {bodyRegionSlug}">
                     <a href="{f:uri.page()}" class="dc-filter__reset">
                         <f:translate key="filter.btn.reset" extensionName="DigitalCatalog" />
                     </a>
@@ -86,7 +98,7 @@
                     <f:render partial="Article/Card" arguments="{article: article}" />
                 </f:for>
             </div>
-            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, systemFilter: systemFilter}" />
+            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, bodyRegionSlug: bodyRegionSlug, bodyRegionFilter: bodyRegionFilter, systemFilter: systemFilter}" />
         </f:then>
         <f:else>
             <div class="dc-empty">

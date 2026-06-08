@@ -136,6 +136,111 @@
         updateWishlistCountBadge(uids.length);
     }
 
+    function initBodyRegionSystemFilter() {
+        const bodyRegionSelect = document.getElementById('dc-filter-bodyregion');
+        const systemSelect = document.getElementById('dc-filter-system');
+        if (!bodyRegionSelect || !systemSelect) return;
+
+        const allOptions = Array.prototype.slice.call(systemSelect.querySelectorAll('option')).map(function (option) {
+            return {
+                value: option.value,
+                label: option.textContent.trim(),
+            };
+        });
+
+        const systemsByArea = {
+            'upper extremities': [
+                'Hand',
+                'CCS',
+                'Arthrodesis',
+                'CMC-l',
+                'Radius minimally invasive',
+                'Distal Radius',
+                'Ulna Shortening',
+                'Forearm',
+                'Elbow',
+                'Proximal Humerus',
+                'Shoulder',
+                'Clavicle',
+                'Wrist'
+            ],
+            'lower extremities': [
+                'Foot',
+                'All-in-One Staple',
+                'Mid- and Hindfoot',
+                'Fusion',
+                'Ankle',
+                'CCS',
+                '3.5 Straight Plates',
+                'Lapidus Cut Guide Disposable Set',
+                'Lapiprep Lapidus Preparation System',
+                'StealthFix Intraosseous Fixation System'
+            ],
+            'cmf': [
+                'MODUS',
+                'MODUS 2 Midface',
+                'MODUS 2 IMF',
+                'Midface 0.9/1.2',
+                'MODUS 2 90° Screwdriver',
+                'MODUS 2 Mandible',
+                'MODUS 2 Orthognatics',
+                'MODUS 2 Transbuccal Set',
+                'TTS',
+                'BFS 0.9/1.2,1.5',
+                'CFS 1.8'
+            ],
+            'cmx': [
+                'CMX Hardware',
+                'CMX Software',
+                'MODUS 2 Orthognatics',
+                'MODUS 2 Mandible',
+                'Wrist',
+                'Forearm',
+                'Ankle'
+            ],
+        };
+
+        function normalize(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function renderSystemOptions() {
+            const selectedBodyRegionLabel = bodyRegionSelect.options[bodyRegionSelect.selectedIndex]?.textContent || '';
+            const selectedSystemValue = systemSelect.value;
+            const allowedSystems = systemsByArea[normalize(selectedBodyRegionLabel)] || null;
+
+            systemSelect.innerHTML = '';
+
+            allOptions.forEach(function (option) {
+                if (option.value === '0') {
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = option.value;
+                    defaultOption.textContent = option.label;
+                    defaultOption.selected = selectedSystemValue === option.value;
+                    systemSelect.appendChild(defaultOption);
+                    return;
+                }
+
+                if (allowedSystems && !allowedSystems.includes(option.label)) {
+                    return;
+                }
+
+                const nextOption = document.createElement('option');
+                nextOption.value = option.value;
+                nextOption.textContent = option.label;
+                nextOption.selected = selectedSystemValue === option.value;
+                systemSelect.appendChild(nextOption);
+            });
+
+            if (!Array.prototype.some.call(systemSelect.options, function (option) { return option.selected; })) {
+                systemSelect.value = '0';
+            }
+        }
+
+        renderSystemOptions();
+        bodyRegionSelect.addEventListener('change', renderSystemOptions);
+    }
+
     // Intercept filter form submit → build clean URL
     function initFilterForm() {
         const form = document.querySelector('.dc-filter__form');
@@ -147,11 +252,17 @@
             e.preventDefault();
 
             const search = (form.querySelector('[name="tx_digitalcatalog_catalog[search]"]')?.value || '').trim();
+            const bodyRegion = (form.querySelector('[name="tx_digitalcatalog_catalog[bodyRegion]"]')?.value || '').trim();
             const system = parseInt(form.querySelector('[name="tx_digitalcatalog_catalog[system]"]')?.value || '0', 10);
 
             let path = baseUrl;
 
-            if (system > 0) {
+            if (bodyRegion) {
+                path += '/area/' + encodeURIComponent(bodyRegion);
+                if (system > 0) {
+                    path += '/system/' + system;
+                }
+            } else if (system > 0) {
                 path += '/system/' + system;
             }
 
@@ -436,6 +547,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         syncCardStates();
         initWishlistToggles();
+        initBodyRegionSystemFilter();
         initFilterForm();
         initAutocomplete();
         initQtySteppers();

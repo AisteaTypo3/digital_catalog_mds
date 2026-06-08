@@ -10,7 +10,7 @@
                     <f:if condition="{systemFilter}">
                         <f:then>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.previousPageNumber, search: search, system: systemFilter}"
+                                arguments="{currentPage: pagination.previousPageNumber, search: search, bodyRegion: bodyRegionSlug, system: systemFilter}"
                                 class="dc-pagination__btn dc-pagination__btn--prev"
                                 aria-label="Vorherige Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -20,7 +20,7 @@
                         </f:then>
                         <f:else>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.previousPageNumber, search: search}"
+                                arguments="{currentPage: pagination.previousPageNumber, search: search, bodyRegion: bodyRegionSlug}"
                                 class="dc-pagination__btn dc-pagination__btn--prev"
                                 aria-label="Vorherige Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -34,7 +34,7 @@
                     <f:if condition="{systemFilter}">
                         <f:then>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.previousPageNumber, system: systemFilter}"
+                                arguments="{currentPage: pagination.previousPageNumber, bodyRegion: bodyRegionSlug, system: systemFilter}"
                                 class="dc-pagination__btn dc-pagination__btn--prev"
                                 aria-label="Vorherige Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -44,7 +44,7 @@
                         </f:then>
                         <f:else>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.previousPageNumber}"
+                                arguments="{currentPage: pagination.previousPageNumber, bodyRegion: bodyRegionSlug}"
                                 class="dc-pagination__btn dc-pagination__btn--prev"
                                 aria-label="Vorherige Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -66,7 +66,7 @@
                                 <f:if condition="{systemFilter}">
                                     <f:then>
                                         <f:link.action action="list"
-                                            arguments="{currentPage: page, search: search, system: systemFilter}"
+                                            arguments="{currentPage: page, search: search, bodyRegion: bodyRegionSlug, system: systemFilter}"
                                             class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
                                             aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
                                             {page}
@@ -74,7 +74,7 @@
                                     </f:then>
                                     <f:else>
                                         <f:link.action action="list"
-                                            arguments="{currentPage: page, search: search}"
+                                            arguments="{currentPage: page, search: search, bodyRegion: bodyRegionSlug}"
                                             class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
                                             aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
                                             {page}
@@ -86,7 +86,7 @@
                                 <f:if condition="{systemFilter}">
                                     <f:then>
                                         <f:link.action action="list"
-                                            arguments="{currentPage: page, system: systemFilter}"
+                                            arguments="{currentPage: page, bodyRegion: bodyRegionSlug, system: systemFilter}"
                                             class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
                                             aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
                                             {page}
@@ -94,7 +94,7 @@
                                     </f:then>
                                     <f:else>
                                         <f:link.action action="list"
-                                            arguments="{currentPage: page}"
+                                            arguments="{currentPage: page, bodyRegion: bodyRegionSlug}"
                                             class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
                                             aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
                                             {page}
@@ -117,7 +117,7 @@
                     <f:if condition="{systemFilter}">
                         <f:then>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.nextPageNumber, search: search, system: systemFilter}"
+                                arguments="{currentPage: pagination.nextPageNumber, search: search, bodyRegion: bodyRegionSlug, system: systemFilter}"
                                 class="dc-pagination__btn dc-pagination__btn--next"
                                 aria-label="Nächste Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -127,7 +127,7 @@
                         </f:then>
                         <f:else>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.nextPageNumber, search: search}"
+                                arguments="{currentPage: pagination.nextPageNumber, search: search, bodyRegion: bodyRegionSlug}"
                                 class="dc-pagination__btn dc-pagination__btn--next"
                                 aria-label="Nächste Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -141,7 +141,7 @@
                     <f:if condition="{systemFilter}">
                         <f:then>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.nextPageNumber, system: systemFilter}"
+                                arguments="{currentPage: pagination.nextPageNumber, bodyRegion: bodyRegionSlug, system: systemFilter}"
                                 class="dc-pagination__btn dc-pagination__btn--next"
                                 aria-label="Nächste Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -151,7 +151,7 @@
                         </f:then>
                         <f:else>
                             <f:link.action action="list"
-                                arguments="{currentPage: pagination.nextPageNumber}"
+                                arguments="{currentPage: pagination.nextPageNumber, bodyRegion: bodyRegionSlug}"
                                 class="dc-pagination__btn dc-pagination__btn--next"
                                 aria-label="Nächste Seite">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

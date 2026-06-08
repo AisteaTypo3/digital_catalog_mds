@@ -22,6 +22,13 @@ use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 
 class CatalogController extends ActionController
 {
+    private const BODY_REGION_SLUGS = [
+        'upper-extremities' => 'Upper Extremities',
+        'lower-extremities' => 'Lower Extremities',
+        'cmf' => 'CMF',
+        'cmx' => 'CMX',
+    ];
+
     public function __construct(
         private readonly ArticleRepository $articleRepository,
         private readonly SystemRepository $systemRepository,
@@ -32,6 +39,8 @@ class CatalogController extends ActionController
     public function listAction(): ResponseInterface
     {
         $search = trim($this->resolveStringArgument('search'));
+        $bodyRegionSlug = $this->resolveBodyRegionSlug();
+        $bodyRegionFilter = $this->resolveBodyRegionUidFromSlug($bodyRegionSlug);
         $systemFilter = $this->resolveIntArgument('system', 0);
         $currentPage = $this->resolveIntArgument('currentPage', 1, 1);
         $storagePid = (int)($this->settings['storagePid'] ?? 0);
@@ -44,12 +53,22 @@ class CatalogController extends ActionController
         }
 
         $constraints = [];
+        $articleUidsForBodyRegion = [];
 
         if ($search !== '') {
             $constraints[] = $query->logicalOr(
                 $query->like('productName', '%' . $search . '%'),
                 $query->like('articleNumber', '%' . $search . '%')
             );
+        }
+
+        if ($bodyRegionFilter > 0) {
+            $articleUidsForBodyRegion = $this->findArticleUidsByBodyRegion($bodyRegionFilter, $storagePid);
+            if ($articleUidsForBodyRegion === []) {
+                $constraints[] = $query->equals('uid', -1);
+            } else {
+                $constraints[] = $query->in('uid', $articleUidsForBodyRegion);
+            }
         }
 
         if ($systemFilter > 0) {
@@ -70,7 +89,10 @@ class CatalogController extends ActionController
         $paginator = new QueryResultPaginator($articles, $currentPage, $itemsPerPage);
         $pagination = new NumberedPagination($paginator, 7);
 
-        $systems = $this->findSystemsWithArticles($storagePid);
+        $bodyRegions = $this->findBodyRegionsWithArticles($storagePid);
+        $systems = $bodyRegionFilter > 0
+            ? $this->findSystemsForArticleUids($articleUidsForBodyRegion)
+            : $this->findSystemsWithArticles($storagePid);
         $wishlistUids = $this->wishlistService->getWishlist();
 
         $this->view->assignMultiple([
@@ -78,8 +100,11 @@ class CatalogController extends ActionController
             'pagination' => $pagination,
             'articles' => $paginator->getPaginatedItems(),
             'totalCount' => $articles->count(),
+            'bodyRegions' => $bodyRegions,
             'systems' => $systems,
             'search' => $search,
+            'bodyRegionSlug' => $bodyRegionSlug,
+            'bodyRegionFilter' => $bodyRegionFilter,
             'systemFilter' => $systemFilter,
             'currentPage' => $currentPage,
             'wishlistUids' => $wishlistUids,
@@ -378,6 +403,10 @@ class CatalogController extends ActionController
             $arguments['currentPage'] = $matches[1];
         }
 
+        if (preg_match('#/area/([^/]+)#', $path, $matches) === 1) {
+            $arguments['bodyRegion'] = $matches[1];
+        }
+
         if (preg_match('#/system/(\d+)#', $path, $matches) === 1) {
             $arguments['system'] = $matches[1];
         }
@@ -424,6 +453,10 @@ class CatalogController extends ActionController
             ->andWhere(
                 $qb->expr()->eq('s.deleted', 0),
                 $qb->expr()->eq('s.hidden', 0),
+                $qb->expr()->or(
+                    $qb->expr()->eq('s.sys_language_uid', -1),
+                    $qb->expr()->eq('s.sys_language_uid', 0)
+                ),
                 $qb->expr()->eq('a.deleted', 0),
                 $qb->expr()->eq('a.hidden', 0)
             )
@@ -431,7 +464,7 @@ class CatalogController extends ActionController
             ->orderBy('s.title', 'ASC');
 
         if ($storagePid > 0) {
-            $query->andWhere($qb->expr()->eq('a.pid', $storagePid));
+            $query->andWhere($qb->expr()->eq('a.pid', $qb->createNamedParameter($storagePid, \Doctrine\DBAL\ParameterType::INTEGER)));
         }
 
         $rows = $query->executeQuery()->fetchAllAssociative();
@@ -444,5 +477,153 @@ class CatalogController extends ActionController
             }
         }
         return $systems;
+    }
+
+    /**
+     * @param array<int, int> $articleUids
+     * @return array<int, object>
+     */
+    private function findSystemsForArticleUids(array $articleUids): array
+    {
+        if ($articleUids === []) {
+            return [];
+        }
+
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_docmanager_domain_model_system');
+
+        $qb->getRestrictions()->removeAll();
+
+        $rows = $qb
+            ->select('s.uid', 's.title')
+            ->from('tx_docmanager_domain_model_system', 's')
+            ->join('s', 'tx_docmanager_system_article_mm', 'mm', 'mm.uid_foreign = s.uid')
+            ->andWhere(
+                $qb->expr()->eq('s.deleted', 0),
+                $qb->expr()->eq('s.hidden', 0),
+                $qb->expr()->or(
+                    $qb->expr()->eq('s.sys_language_uid', -1),
+                    $qb->expr()->eq('s.sys_language_uid', 0)
+                ),
+                $qb->expr()->in(
+                    'mm.uid_local',
+                    $qb->createNamedParameter($articleUids, \Doctrine\DBAL\ArrayParameterType::INTEGER)
+                )
+            )
+            ->groupBy('s.uid', 's.title')
+            ->orderBy('s.title', 'ASC')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $systems = [];
+        foreach ($rows as $row) {
+            $system = $this->systemRepository->findByUid((int)$row['uid']);
+            if ($system !== null) {
+                $systems[] = $system;
+            }
+        }
+
+        return $systems;
+    }
+
+    private function findBodyRegionsWithArticles(int $storagePid): array
+    {
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_docmanager_domain_model_bodyregion');
+
+        $qb->getRestrictions()->removeAll();
+
+        $query = $qb
+            ->select('br.uid', 'br.title')
+            ->from('tx_docmanager_domain_model_bodyregion', 'br')
+            ->join('br', 'tx_docmanager_domain_model_bodysubregion', 'bsr', 'bsr.body_region = br.uid')
+            ->join('bsr', 'tx_docmanager_bodysubregion_article_mm', 'bmm', 'bmm.uid_foreign = bsr.uid')
+            ->join('bmm', 'tx_docmanager_domain_model_article', 'a', 'a.uid = bmm.uid_local')
+            ->andWhere(
+                $qb->expr()->eq('br.deleted', 0),
+                $qb->expr()->eq('br.hidden', 0),
+                $qb->expr()->or(
+                    $qb->expr()->eq('br.sys_language_uid', -1),
+                    $qb->expr()->eq('br.sys_language_uid', 0)
+                ),
+                $qb->expr()->eq('bsr.deleted', 0),
+                $qb->expr()->eq('bsr.hidden', 0),
+                $qb->expr()->or(
+                    $qb->expr()->eq('bsr.sys_language_uid', -1),
+                    $qb->expr()->eq('bsr.sys_language_uid', 0)
+                ),
+                $qb->expr()->eq('a.deleted', 0),
+                $qb->expr()->eq('a.hidden', 0)
+            )
+            ->groupBy('br.uid', 'br.title')
+            ->orderBy('br.title', 'ASC');
+
+        if ($storagePid > 0) {
+            $query->andWhere($qb->expr()->eq('a.pid', $qb->createNamedParameter($storagePid, \Doctrine\DBAL\ParameterType::INTEGER)));
+        }
+
+        return $query->executeQuery()->fetchAllAssociative();
+    }
+
+    /**
+     * Returns article uids linked to sub regions belonging to the selected body region.
+     *
+     * @return array<int, int>
+     */
+    private function findArticleUidsByBodyRegion(int $bodyRegionUid, int $storagePid): array
+    {
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_docmanager_domain_model_article');
+
+        $qb->getRestrictions()->removeAll();
+
+        $query = $qb
+            ->select('a.uid')
+            ->from('tx_docmanager_domain_model_article', 'a')
+            ->join('a', 'tx_docmanager_bodysubregion_article_mm', 'bmm', 'bmm.uid_local = a.uid')
+            ->join('bmm', 'tx_docmanager_domain_model_bodysubregion', 'bsr', 'bsr.uid = bmm.uid_foreign')
+            ->andWhere(
+                $qb->expr()->eq('a.deleted', 0),
+                $qb->expr()->eq('a.hidden', 0),
+                $qb->expr()->eq('bsr.deleted', 0),
+                $qb->expr()->eq('bsr.hidden', 0),
+                $qb->expr()->or(
+                    $qb->expr()->eq('bsr.sys_language_uid', -1),
+                    $qb->expr()->eq('bsr.sys_language_uid', 0)
+                ),
+                $qb->expr()->eq('bsr.body_region', $qb->createNamedParameter($bodyRegionUid, \Doctrine\DBAL\ParameterType::INTEGER))
+            )
+            ->groupBy('a.uid');
+
+        if ($storagePid > 0) {
+            $query->andWhere($qb->expr()->eq('a.pid', $qb->createNamedParameter($storagePid, \Doctrine\DBAL\ParameterType::INTEGER)));
+        }
+
+        return array_map(
+            static fn(array $row): int => (int)$row['uid'],
+            $query->executeQuery()->fetchAllAssociative()
+        );
+    }
+
+    private function resolveBodyRegionSlug(): string
+    {
+        $slug = trim($this->resolveStringArgument('bodyRegion'));
+        return isset(self::BODY_REGION_SLUGS[$slug]) ? $slug : '';
+    }
+
+    private function resolveBodyRegionUidFromSlug(string $slug): int
+    {
+        if ($slug === '' || !isset(self::BODY_REGION_SLUGS[$slug])) {
+            return 0;
+        }
+
+        $targetTitle = self::BODY_REGION_SLUGS[$slug];
+        foreach ($this->findBodyRegionsWithArticles((int)($this->settings['storagePid'] ?? 0)) as $bodyRegion) {
+            if (($bodyRegion['title'] ?? '') === $targetTitle) {
+                return (int)($bodyRegion['uid'] ?? 0);
+            }
+        }
+
+        return 0;
     }
 }
