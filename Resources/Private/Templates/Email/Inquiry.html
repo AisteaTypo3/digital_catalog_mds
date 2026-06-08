@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f0f0;padding:32px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;">
+
+      <tr>
+        <td style="background-color:#0a0a0a;padding:24px 36px;">
+          <span style="color:#ffffff;font-size:18px;font-weight:300;letter-spacing:-0.5px;">Medartis</span>
+          <span style="color:#c8102e;font-size:18px;font-weight:300;"> &middot; Digital Catalog</span>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:32px 36px 8px;">
+          <h1 style="margin:0 0 8px 0;font-size:18px;font-weight:400;color:#0a0a0a;letter-spacing:-0.5px;">{subject}</h1>
+          <p style="margin:0;font-size:14px;color:#888888;line-height:1.5;">{translations.intro}</p>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:24px 36px 8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">
+            <tr>
+              <td colspan="2" style="padding:10px 14px;background-color:#f7f7f7;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888888;">{translations.senderTitle}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;color:#888888;font-size:13px;width:140px;">{translations.senderName}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;font-size:14px;color:#1a1a1a;">{name}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;color:#888888;font-size:13px;width:140px;">{translations.senderEmail}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;font-size:14px;color:#1a1a1a;"><a href="mailto:{email}" style="color:#c8102e;text-decoration:none;">{email}</a></td>
+            </tr>
+            <f:if condition="{company}">
+              <tr>
+                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;color:#888888;font-size:13px;width:140px;">{translations.senderCompany}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;font-size:14px;color:#1a1a1a;">{company}</td>
+              </tr>
+            </f:if>
+            <f:if condition="{message}">
+              <tr>
+                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;color:#888888;font-size:13px;width:140px;vertical-align:top;">{translations.senderMessage}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;font-size:14px;color:#1a1a1a;vertical-align:top;"><f:format.nl2br>{message}</f:format.nl2br></td>
+              </tr>
+            </f:if>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:24px 36px 8px;">
+          <p style="margin:0 0 10px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888888;">{translations.productsTitle} ({articles -> f:count()})</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">
+            <tr style="background-color:#0a0a0a;">
+              <th style="padding:10px 14px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#666666;width:36px;">#</th>
+              <th style="padding:10px 14px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#ffffff;width:48px;">{translations.colQty}</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#ffffff;">{translations.colName}</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#ffffff;">{translations.colNumber}</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#ffffff;">{translations.colSystems}</th>
+            </tr>
+            <f:for each="{articles}" as="article" iteration="iter">
+              <tr style="background-color:{f:if(condition: iter.isOdd, then: '#f9f9f9', else: '#ffffff')};">
+                <td style="padding:10px 14px;border-bottom:1px solid #eeeeee;color:#999999;font-size:13px;text-align:center;width:36px;">{iter.cycle}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #eeeeee;text-align:center;font-weight:600;font-size:13px;color:#0a0a0a;width:48px;">{article.qty}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #eeeeee;font-weight:500;color:#1a1a1a;font-size:14px;">{article.name}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #eeeeee;font-family:'Courier New',monospace;font-size:12px;color:#888888;white-space:nowrap;">{article.number}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #eeeeee;font-size:12px;color:#666666;">{article.systems}</td>
+              </tr>
+            </f:for>
+          </table>
+          <p style="margin:8px 0 0;font-size:12px;color:#aaaaaa;">{translations.attachmentHint}</p>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:24px 36px;border-top:1px solid #f0f0f0;background-color:#fafafa;">
+          <p style="margin:0;font-size:11px;color:#cccccc;">{translations.footer}</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

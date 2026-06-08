@@ -1,4 +1,5 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:dc="http://typo3.org/ns/Medartis/DigitalCatalog/ViewHelpers"
       data-namespace-typo3-fluid="true">
 <f:layout name="Default" />
 
@@ -71,8 +72,21 @@
                         <path d="m19 9-7 7-7-7" />
                     </svg>
                 </div>
+                <f:if condition="{availableTypeOptions}">
+                <div class="dc-filter__select-wrap">
+                    <select name="tx_digitalcatalog_catalog[type]" id="dc-filter-type" class="dc-filter__select">
+                        <option value=""><f:translate key="filter.type.all" extensionName="DigitalCatalog" /></option>
+                        <f:for each="{availableTypeOptions}" as="typeOption">
+                            <option value="{typeOption.value}" {f:if(condition: '{typeFilter} == {typeOption.value}', then: 'selected="selected"')}>{typeOption.label}</option>
+                        </f:for>
+                    </select>
+                    <svg class="dc-filter__select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m19 9-7 7-7-7" />
+                    </svg>
+                </div>
+                </f:if>
                 <button type="submit" class="dc-filter__btn"><f:translate key="filter.btn.filter" extensionName="DigitalCatalog" /></button>
-                <f:if condition="{search} || {systemFilter} || {bodyRegionSlug}">
+                <f:if condition="{search} || {systemFilter} || {bodyRegionSlug} || {typeFilter}">
                     <a href="{f:uri.page()}" class="dc-filter__reset">
                         <f:translate key="filter.btn.reset" extensionName="DigitalCatalog" />
                     </a>
@@ -98,7 +112,7 @@
                     <f:render partial="Article/Card" arguments="{article: article}" />
                 </f:for>
             </div>
-            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, bodyRegionSlug: bodyRegionSlug, bodyRegionFilter: bodyRegionFilter, systemFilter: systemFilter}" />
+            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, bodyRegionSlug: bodyRegionSlug, systemFilter: systemFilter, typeFilter: typeFilter}" />
         </f:then>
         <f:else>
             <div class="dc-empty">

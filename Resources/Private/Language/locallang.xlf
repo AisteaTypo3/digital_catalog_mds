@@ -20,6 +20,9 @@
             <trans-unit id="filter.bodyregion.all">
                 <source>All Body Regions</source>
             </trans-unit>
+            <trans-unit id="filter.type.all">
+                <source>All Types</source>
+            </trans-unit>
             <trans-unit id="filter.btn.filter">
                 <source>Filter</source>
             </trans-unit>

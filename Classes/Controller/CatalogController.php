@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Medartis\DigitalCatalog\Controller;
 
 use GeorgRinger\NumberedPagination\NumberedPagination;
+use Medartis\DigitalCatalog\Enum\ProductType;
 use Medartis\DigitalCatalog\Service\ProductDocumentationService;
 use Medartis\DigitalCatalog\Service\WishlistService;
 use Medartis\DocManager\Domain\Model\Article;
@@ -13,6 +14,7 @@ use Medartis\DocManager\Domain\Repository\SystemRepository;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
+use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -87,26 +89,51 @@ class CatalogController extends ActionController
 
         $articles = $query->execute();
 
-        $paginator = new QueryResultPaginator($articles, $currentPage, $itemsPerPage);
+        $typeFilter = $this->resolveStringArgument('type');
+        $productType = ProductType::tryFrom($typeFilter);
+
+        $typeClassification = $this->classifyArticlesByType($storagePid, $articleUidsForBodyRegion, $systemFilter, $search);
+
+        $availableTypeOptions = [];
+        foreach (ProductType::cases() as $pt) {
+            if ($pt !== ProductType::Other && isset($typeClassification[$pt->value])) {
+                $availableTypeOptions[] = ['value' => $pt->value, 'label' => $pt->label()];
+            }
+        }
+
+        if ($productType !== null) {
+            $matchingUids = $typeClassification[$productType->value] ?? [];
+            $paginator  = new ArrayPaginator($matchingUids, $currentPage, $itemsPerPage);
+            $totalCount = count($matchingUids);
+            $pageUids   = array_map('intval', iterator_to_array($paginator->getPaginatedItems()));
+            $pageItems  = $this->loadArticlesByUids($pageUids);
+        } else {
+            $paginator  = new QueryResultPaginator($articles, $currentPage, $itemsPerPage);
+            $totalCount = $articles->count();
+            $pageItems  = $paginator->getPaginatedItems();
+        }
+
         $pagination = new NumberedPagination($paginator, 7);
 
         $bodyRegions = $this->findBodyRegionsWithArticles($storagePid);
         $systems = $bodyRegionFilter > 0
-            ? $this->findSystemsForArticleUids($articleUidsForBodyRegion)
-            : $this->findSystemsWithArticles($storagePid);
+            ? $this->findSystems(articleUids: $articleUidsForBodyRegion)
+            : $this->findSystems($storagePid);
         $wishlistUids = $this->wishlistService->getWishlist();
 
         $this->view->assignMultiple([
             'paginator' => $paginator,
             'pagination' => $pagination,
-            'articles' => $paginator->getPaginatedItems(),
-            'totalCount' => $articles->count(),
+            'articles' => $pageItems,
+            'totalCount' => $totalCount,
             'bodyRegions' => $bodyRegions,
             'systems' => $systems,
             'search' => $search,
             'bodyRegionSlug' => $bodyRegionSlug,
             'bodyRegionFilter' => $bodyRegionFilter,
             'systemFilter' => $systemFilter,
+            'typeFilter' => $typeFilter,
+            'availableTypeOptions' => $availableTypeOptions,
             'currentPage' => $currentPage,
             'wishlistUids' => $wishlistUids,
             'wishlistCount' => count($wishlistUids),
@@ -414,6 +441,10 @@ class CatalogController extends ActionController
             $arguments['system'] = $matches[1];
         }
 
+        if (preg_match('#/type/([a-z-]+)#', $path, $matches) === 1) {
+            $arguments['type'] = $matches[1];
+        }
+
         return $arguments;
     }
 
@@ -438,59 +469,16 @@ class CatalogController extends ActionController
     }
 
     /**
-     * Returns only systems that have at least one article in the given storage PID.
-     * Joins tx_docmanager_system_article_mm → article table filtered by pid.
+     * Returns systems that have at least one linked article.
+     * When $articleUids is non-empty, filters by those UIDs (body-region path).
+     * Otherwise joins the article table and filters by $storagePid.
      *
-     * @return array<int, object>
-     */
-    private function findSystemsWithArticles(int $storagePid): array
-    {
-        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('tx_docmanager_domain_model_system');
-
-        $qb->getRestrictions()->removeAll();
-
-        $query = $qb
-            ->select('s.uid', 's.title')
-            ->from('tx_docmanager_domain_model_system', 's')
-            ->join('s', 'tx_docmanager_system_article_mm', 'mm', 'mm.uid_foreign = s.uid')
-            ->join('mm', 'tx_docmanager_domain_model_article', 'a', 'a.uid = mm.uid_local')
-            ->andWhere(
-                $qb->expr()->eq('s.deleted', 0),
-                $qb->expr()->eq('s.hidden', 0),
-                $qb->expr()->or(
-                    $qb->expr()->eq('s.sys_language_uid', -1),
-                    $qb->expr()->eq('s.sys_language_uid', 0)
-                ),
-                $qb->expr()->eq('a.deleted', 0),
-                $qb->expr()->eq('a.hidden', 0)
-            )
-            ->groupBy('s.uid', 's.title')
-            ->orderBy('s.title', 'ASC');
-
-        if ($storagePid > 0) {
-            $query->andWhere($qb->expr()->eq('a.pid', $qb->createNamedParameter($storagePid, \Doctrine\DBAL\ParameterType::INTEGER)));
-        }
-
-        $rows = $query->executeQuery()->fetchAllAssociative();
-
-        $systems = [];
-        foreach ($rows as $row) {
-            $system = $this->systemRepository->findByUid((int)$row['uid']);
-            if ($system !== null) {
-                $systems[] = $system;
-            }
-        }
-        return $systems;
-    }
-
-    /**
      * @param array<int, int> $articleUids
      * @return array<int, object>
      */
-    private function findSystemsForArticleUids(array $articleUids): array
+    private function findSystems(int $storagePid = 0, array $articleUids = []): array
     {
-        if ($articleUids === []) {
+        if ($articleUids === [] && $storagePid === 0) {
             return [];
         }
 
@@ -498,9 +486,7 @@ class CatalogController extends ActionController
             ->getQueryBuilderForTable('tx_docmanager_domain_model_system');
 
         $qb->getRestrictions()->removeAll();
-
-        $rows = $qb
-            ->select('s.uid', 's.title')
+        $qb->select('s.uid', 's.title')
             ->from('tx_docmanager_domain_model_system', 's')
             ->join('s', 'tx_docmanager_system_article_mm', 'mm', 'mm.uid_foreign = s.uid')
             ->andWhere(
@@ -509,25 +495,33 @@ class CatalogController extends ActionController
                 $qb->expr()->or(
                     $qb->expr()->eq('s.sys_language_uid', -1),
                     $qb->expr()->eq('s.sys_language_uid', 0)
-                ),
-                $qb->expr()->in(
-                    'mm.uid_local',
-                    $qb->createNamedParameter($articleUids, \Doctrine\DBAL\ArrayParameterType::INTEGER)
                 )
             )
             ->groupBy('s.uid', 's.title')
-            ->orderBy('s.title', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
+            ->orderBy('s.title', 'ASC');
+
+        if ($articleUids !== []) {
+            $qb->andWhere(
+                $qb->expr()->in('mm.uid_local', $qb->createNamedParameter($articleUids, \Doctrine\DBAL\ArrayParameterType::INTEGER))
+            );
+        } else {
+            $qb->join('mm', 'tx_docmanager_domain_model_article', 'a', 'a.uid = mm.uid_local')
+                ->andWhere(
+                    $qb->expr()->eq('a.deleted', 0),
+                    $qb->expr()->eq('a.hidden', 0)
+                );
+            if ($storagePid > 0) {
+                $qb->andWhere($qb->expr()->eq('a.pid', $qb->createNamedParameter($storagePid, \Doctrine\DBAL\ParameterType::INTEGER)));
+            }
+        }
 
         $systems = [];
-        foreach ($rows as $row) {
+        foreach ($qb->executeQuery()->fetchAllAssociative() as $row) {
             $system = $this->systemRepository->findByUid((int)$row['uid']);
             if ($system !== null) {
                 $systems[] = $system;
             }
         }
-
         return $systems;
     }
 
@@ -615,6 +609,83 @@ class CatalogController extends ActionController
     {
         $slug = trim($this->resolveStringArgument('bodyRegion'));
         return isset(self::BODY_REGION_SLUGS[$slug]) ? $slug : '';
+    }
+
+    /**
+     * Classifies all articles matching current filters by product type.
+     * Returns a map of ProductType::value → sorted UIDs array.
+     * One lightweight SQL query serves both the type filter and the available-types dropdown.
+     *
+     * @param array<int, int> $articleUidsForBodyRegion
+     * @return array<string, list<int>>
+     */
+    private function classifyArticlesByType(
+        int $storagePid,
+        array $articleUidsForBodyRegion,
+        int $systemFilter,
+        string $search
+    ): array {
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_docmanager_domain_model_article');
+        $qb->getRestrictions()->removeAll();
+
+        $qb->select('a.uid', 'a.product_name')
+            ->from('tx_docmanager_domain_model_article', 'a')
+            ->andWhere(
+                $qb->expr()->eq('a.deleted', 0),
+                $qb->expr()->eq('a.hidden', 0)
+            )
+            ->orderBy('a.product_name', 'ASC');
+
+        if ($storagePid > 0) {
+            $qb->andWhere($qb->expr()->eq('a.pid', $qb->createNamedParameter($storagePid, \Doctrine\DBAL\ParameterType::INTEGER)));
+        }
+
+        if ($articleUidsForBodyRegion !== []) {
+            $qb->andWhere($qb->expr()->in('a.uid', $qb->createNamedParameter($articleUidsForBodyRegion, \Doctrine\DBAL\ArrayParameterType::INTEGER)));
+        }
+
+        if ($systemFilter > 0) {
+            $qb->join('a', 'tx_docmanager_system_article_mm', 'smm', 'smm.uid_local = a.uid')
+                ->andWhere($qb->expr()->eq('smm.uid_foreign', $qb->createNamedParameter($systemFilter, \Doctrine\DBAL\ParameterType::INTEGER)));
+        }
+
+        if ($search !== '') {
+            $qb->andWhere($qb->expr()->or(
+                $qb->expr()->like('a.product_name', $qb->createNamedParameter('%' . $search . '%')),
+                $qb->expr()->like('a.article_number', $qb->createNamedParameter('%' . $search . '%'))
+            ));
+        }
+
+        $classified = [];
+        foreach ($qb->executeQuery()->fetchAllAssociative() as $row) {
+            $pt = ProductType::fromProductName((string)$row['product_name']);
+            if ($pt !== ProductType::Other) {
+                $classified[$pt->value][] = (int)$row['uid'];
+            }
+        }
+
+        return $classified;
+    }
+
+    /**
+     * Loads a specific set of articles by UID as full Extbase objects, ordered by product name.
+     *
+     * @param array<int, int> $uids
+     * @return array<int, object>
+     */
+    private function loadArticlesByUids(array $uids): array
+    {
+        if ($uids === []) {
+            return [];
+        }
+
+        $query = $this->articleRepository->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->matching($query->in('uid', $uids));
+        $query->setOrderings(['productName' => QueryInterface::ORDER_ASCENDING]);
+
+        return iterator_to_array($query->execute());
     }
 
     private function resolveBodyRegionUidFromSlug(string $slug): int

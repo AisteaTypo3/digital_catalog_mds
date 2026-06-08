@@ -254,6 +254,7 @@
             const search = (form.querySelector('[name="tx_digitalcatalog_catalog[search]"]')?.value || '').trim();
             const bodyRegion = (form.querySelector('[name="tx_digitalcatalog_catalog[bodyRegion]"]')?.value || '').trim();
             const system = parseInt(form.querySelector('[name="tx_digitalcatalog_catalog[system]"]')?.value || '0', 10);
+            const type = (form.querySelector('[name="tx_digitalcatalog_catalog[type]"]')?.value || '').trim();
 
             let path = baseUrl;
 
@@ -264,6 +265,10 @@
                 }
             } else if (system > 0) {
                 path += '/system/' + system;
+            }
+
+            if (type) {
+                path += '/type/' + encodeURIComponent(type);
             }
 
             const params = new URLSearchParams();

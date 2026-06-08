@@ -7,6 +7,7 @@
             <trans-unit id="filter.search.placeholder"><source>Search product or article number …</source><target>Produkt oder Artikelnummer suchen …</target></trans-unit>
             <trans-unit id="filter.system.all"><source>All Systems</source><target>Alle Systeme</target></trans-unit>
             <trans-unit id="filter.bodyregion.all"><source>All Body Regions</source><target>Alle Körperregionen</target></trans-unit>
+            <trans-unit id="filter.type.all"><source>All Types</source><target>Alle Typen</target></trans-unit>
             <trans-unit id="filter.btn.filter"><source>Filter</source><target>Filtern</target></trans-unit>
             <trans-unit id="filter.btn.reset"><source>Reset</source><target>Zurücksetzen</target></trans-unit>
             <trans-unit id="autocomplete.loading"><source>Loading suggestions ...</source><target>Vorschläge werden geladen ...</target></trans-unit>
