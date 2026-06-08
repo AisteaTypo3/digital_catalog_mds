@@ -8,9 +8,9 @@ use Doctrine\DBAL\ParameterType;
 use SimpleXMLElement;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\Exception\FolderDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileCollectionRepository;
-use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class ProductDocumentationService
@@ -79,7 +79,7 @@ final class ProductDocumentationService
             }
 
             foreach ($collection->getItems() as $file) {
-                if (!$file instanceof FileInterface) {
+                if (!$file instanceof AbstractFile) {
                     continue;
                 }
 
@@ -264,7 +264,7 @@ final class ProductDocumentationService
      * @param array<int, string> $normalizedSystems
      * @return array<string, int|string>|null
      */
-    private function buildDocumentData(FileInterface $file, array $normalizedSystems, string $pageLocale): ?array
+    private function buildDocumentData(AbstractFile $file, array $normalizedSystems, string $pageLocale): ?array
     {
         $properties = $file->getProperties();
         if ((int)($properties['archive'] ?? 0) !== 0) {
@@ -316,33 +316,6 @@ final class ProductDocumentationService
             || $fileLanguage === $languageName
             || str_starts_with($fileLanguage, $pageLocale . '-')
             || str_starts_with($fileLanguage, $pageLocale . '_');
-    }
-
-    /**
-     * @param array<int, string> $values
-     * @return array<int, string>
-     */
-    private function normalizeValues(array $values): array
-    {
-        $normalized = [];
-        foreach ($values as $value) {
-            $value = $this->normalizeValue($value);
-            if ($value === '') {
-                continue;
-            }
-
-            $normalized[$value] = $value;
-        }
-
-        return array_values($normalized);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function normalizeCsvValues(string $value): array
-    {
-        return $this->normalizeValues(GeneralUtility::trimExplode(',', $value, true));
     }
 
     private function normalizeValue(string $value): string

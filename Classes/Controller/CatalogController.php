@@ -194,10 +194,10 @@ class CatalogController extends ActionController
         }
 
         $productDocuments = $this->productDocumentationService->findBySystems(
-            array_map(
+            array_values(array_map(
                 static fn ($system): string => $system->getTitle(),
                 iterator_to_array($article->getSystems())
-            ),
+            )),
             $pageLocale
         );
 
@@ -372,6 +372,7 @@ class CatalogController extends ActionController
         return max($minimum, (int)$value);
     }
 
+    /** @return array<string, mixed> */
     private function getPluginQueryArguments(): array
     {
         $queryParams = $this->request->getQueryParams();
@@ -379,6 +380,7 @@ class CatalogController extends ActionController
         return is_array($pluginArguments) ? $pluginArguments : [];
     }
 
+    /** @return array<string, mixed> */
     private function getRouteArguments(): array
     {
         $routing = $this->request->getAttribute('routing');
@@ -388,13 +390,13 @@ class CatalogController extends ActionController
                 return $pluginArguments;
             }
 
-            $arguments = $routing->getArguments();
-            return is_array($arguments) ? $arguments : [];
+            return $routing->getArguments();
         }
 
         return [];
     }
 
+    /** @return array<string, string> */
     private function getArgumentsFromRequestPath(): array
     {
         $path = $this->request->getUri()->getPath();
@@ -438,6 +440,8 @@ class CatalogController extends ActionController
     /**
      * Returns only systems that have at least one article in the given storage PID.
      * Joins tx_docmanager_system_article_mm → article table filtered by pid.
+     *
+     * @return array<int, object>
      */
     private function findSystemsWithArticles(int $storagePid): array
     {
@@ -527,6 +531,7 @@ class CatalogController extends ActionController
         return $systems;
     }
 
+    /** @return array<int, array<string, mixed>> */
     private function findBodyRegionsWithArticles(int $storagePid): array
     {
         $qb = GeneralUtility::makeInstance(ConnectionPool::class)

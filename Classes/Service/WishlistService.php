@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medartis\DigitalCatalog\Service;
 
+use Medartis\DocManager\Domain\Model\Article;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -28,7 +29,7 @@ class WishlistService implements SingletonInterface
         return $request->getAttribute('frontend.user');
     }
 
-    /** Returns [uid => qty] map */
+    /** @return array<int, int> */
     public function getWishlistWithQuantities(): array
     {
         $feUser = $this->getFrontendUser();
@@ -48,7 +49,7 @@ class WishlistService implements SingletonInterface
         return array_fill_keys($uids, 1);
     }
 
-    /** Returns flat UID array (for badge / article loading) */
+    /** @return array<int, int> */
     public function getWishlist(): array
     {
         return array_keys($this->getWishlistWithQuantities());
@@ -89,6 +90,7 @@ class WishlistService implements SingletonInterface
         $this->saveWishlist([]);
     }
 
+    /** @param array<int, int> $quantities */
     private function saveWishlist(array $quantities): void
     {
         $feUser = $this->getFrontendUser();
@@ -98,6 +100,7 @@ class WishlistService implements SingletonInterface
         $feUser->setAndSaveSessionData(self::SESSION_KEY, json_encode($quantities));
     }
 
+    /** @param iterable<Article> $articles */
     public function sendInquiryMail(
         string $name,
         string $email,
@@ -153,6 +156,9 @@ class WishlistService implements SingletonInterface
         $mail->send();
     }
 
+    /**
+     * @param array<int, array{qty: int, name: string, number: string, systems: string}> $articles
+     */
     private function buildEmailHtml(
         string $name,
         string $email,
@@ -292,6 +298,7 @@ HTML;
         );
     }
 
+    /** @param array<int, array{qty: int, name: string, number: string, systems: string}> $articles */
     private function buildExcel(array $articles, callable $t): ?string
     {
         try {
