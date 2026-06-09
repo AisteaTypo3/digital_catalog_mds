@@ -31,6 +31,60 @@ class CatalogController extends ActionController
         'cmx' => 'CMX',
     ];
 
+    // System titles must exactly match the system.title values in the database.
+    // To update: add/remove entries in the relevant area array — no other code changes needed.
+    private const SYSTEMS_BY_BODY_REGION = [
+        'upper-extremities' => [
+            'Hand',
+            'CCS',
+            'Arthrodesis',
+            'CMC-l',
+            'Radius minimally invasive',
+            'Distal Radius',
+            'Ulna Shortening',
+            'Forearm',
+            'Elbow',
+            'Proximal Humerus',
+            'Shoulder',
+            'Clavicle',
+            'Wrist',
+        ],
+        'lower-extremities' => [
+            'Foot',
+            'All-in-One Staple',
+            'Mid- and Hindfoot',
+            'Fusion',
+            'Ankle',
+            'CCS',
+            '3.5 Straight Plates',
+            'Lapidus Cut Guide Disposable Set',
+            'Lapiprep Lapidus Preparation System',
+            'StealthFix Intraosseous Fixation System',
+        ],
+        'cmf' => [
+            'MODUS',
+            'MODUS 2 Midface',
+            'MODUS 2 IMF',
+            'Midface 0.9/1.2',
+            'MODUS 2 90° Screwdriver',
+            'MODUS 2 Mandible',
+            'MODUS 2 Orthognatics',
+            'MODUS 2 Transbuccal Set',
+            'TTS',
+            'BFS 0.9/1.2,1.5',
+            'CFS 1.8',
+        ],
+        'cmx' => [
+            'CMX Hardware',
+            'CMX Software',
+            'MODUS 2 Orthognatics',
+            'MODUS 2 Mandible',
+            'Wrist',
+            'Forearm',
+            'Ankle',
+        ],
+    ];
+
     public function __construct(
         private readonly ArticleRepository $articleRepository,
         private readonly SystemRepository $systemRepository,
@@ -119,6 +173,7 @@ class CatalogController extends ActionController
         $systems = $bodyRegionFilter > 0
             ? $this->findSystems(articleUids: $articleUidsForBodyRegion)
             : $this->findSystems($storagePid);
+        $systemsByBodyRegion = json_encode(self::SYSTEMS_BY_BODY_REGION, JSON_THROW_ON_ERROR);
         $wishlistUids = $this->wishlistService->getWishlist();
 
         $this->view->assignMultiple([
@@ -134,6 +189,7 @@ class CatalogController extends ActionController
             'systemFilter' => $systemFilter,
             'typeFilter' => $typeFilter,
             'availableTypeOptions' => $availableTypeOptions,
+            'systemsByBodyRegion' => $systemsByBodyRegion,
             'currentPage' => $currentPage,
             'wishlistUids' => $wishlistUids,
             'wishlistCount' => count($wishlistUids),
@@ -345,6 +401,11 @@ class CatalogController extends ActionController
 
     public function submitInquiryAction(): ResponseInterface
     {
+        $website = trim((string)($this->request->hasArgument('website') ? $this->request->getArgument('website') : ''));
+        if ($website !== '') {
+            return $this->redirect('wishlist');
+        }
+
         $name = trim((string)($this->request->hasArgument('name') ? $this->request->getArgument('name') : ''));
         $email = trim((string)($this->request->hasArgument('email') ? $this->request->getArgument('email') : ''));
         $company = trim((string)($this->request->hasArgument('company') ? $this->request->getArgument('company') : ''));
@@ -668,6 +729,12 @@ class CatalogController extends ActionController
         return $classified;
     }
 
+    /**
+     * Returns a map of lowercase body-region title → sorted system title list.
+     * Used to populate the JS-side system filter without hardcoded data.
+     *
+     * @return array<string, list<string>>
+     */
     /**
      * Loads a specific set of articles by UID as full Extbase objects, ordered by product name.
      *

@@ -141,6 +141,12 @@
         const systemSelect = document.getElementById('dc-filter-system');
         if (!bodyRegionSelect || !systemSelect) return;
 
+        const form = document.querySelector('.dc-filter__form');
+        var systemsByArea = {};
+        try {
+            systemsByArea = JSON.parse((form && form.dataset.systemsByArea) || '{}');
+        } catch (e) {}
+
         const allOptions = Array.prototype.slice.call(systemSelect.querySelectorAll('option')).map(function (option) {
             return {
                 value: option.value,
@@ -148,66 +154,10 @@
             };
         });
 
-        const systemsByArea = {
-            'upper extremities': [
-                'Hand',
-                'CCS',
-                'Arthrodesis',
-                'CMC-l',
-                'Radius minimally invasive',
-                'Distal Radius',
-                'Ulna Shortening',
-                'Forearm',
-                'Elbow',
-                'Proximal Humerus',
-                'Shoulder',
-                'Clavicle',
-                'Wrist'
-            ],
-            'lower extremities': [
-                'Foot',
-                'All-in-One Staple',
-                'Mid- and Hindfoot',
-                'Fusion',
-                'Ankle',
-                'CCS',
-                '3.5 Straight Plates',
-                'Lapidus Cut Guide Disposable Set',
-                'Lapiprep Lapidus Preparation System',
-                'StealthFix Intraosseous Fixation System'
-            ],
-            'cmf': [
-                'MODUS',
-                'MODUS 2 Midface',
-                'MODUS 2 IMF',
-                'Midface 0.9/1.2',
-                'MODUS 2 90° Screwdriver',
-                'MODUS 2 Mandible',
-                'MODUS 2 Orthognatics',
-                'MODUS 2 Transbuccal Set',
-                'TTS',
-                'BFS 0.9/1.2,1.5',
-                'CFS 1.8'
-            ],
-            'cmx': [
-                'CMX Hardware',
-                'CMX Software',
-                'MODUS 2 Orthognatics',
-                'MODUS 2 Mandible',
-                'Wrist',
-                'Forearm',
-                'Ankle'
-            ],
-        };
-
-        function normalize(value) {
-            return String(value || '').trim().toLowerCase();
-        }
-
         function renderSystemOptions() {
-            const selectedBodyRegionLabel = bodyRegionSelect.options[bodyRegionSelect.selectedIndex]?.textContent || '';
+            const selectedBodyRegionValue = bodyRegionSelect.value;
             const selectedSystemValue = systemSelect.value;
-            const allowedSystems = systemsByArea[normalize(selectedBodyRegionLabel)] || null;
+            const allowedSystems = selectedBodyRegionValue ? (systemsByArea[selectedBodyRegionValue] || []) : null;
 
             systemSelect.innerHTML = '';
 

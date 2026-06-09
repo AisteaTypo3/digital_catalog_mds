@@ -55,7 +55,7 @@
                                         <div class="dc-wishlist-item__media">
                                             <f:if condition="{item.article.image}">
                                                 <f:then>
-                                                    <f:image image="{item.article.image}" class="dc-wishlist-item__img" alt="{item.article.productName}" width="80" height="80c" />
+                                                    <f:image image="{item.article.image}" class="dc-wishlist-item__img" alt="{item.article.productName}" width="80" height="80c" loading="lazy" />
                                                 </f:then>
                                                 <f:else>
                                                     <div class="dc-wishlist-item__placeholder">
@@ -112,6 +112,10 @@
                             </p>
 
                             <f:form action="submitInquiry" method="post" class="dc-form">
+                                <div class="dc-honeypot" aria-hidden="true">
+                                    <label for="dc-hp-website">Website</label>
+                                    <f:form.textfield id="dc-hp-website" name="website" tabindex="-1" autocomplete="off" />
+                                </div>
                                 <div class="dc-form__row">
                                     <div class="dc-form__group">
                                         <label class="dc-form__label" for="dc-name">

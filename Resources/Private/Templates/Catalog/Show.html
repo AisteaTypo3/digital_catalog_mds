@@ -20,7 +20,7 @@
             <div class="dc-detail__media">
                 <f:if condition="{article.image}">
                     <f:then>
-                        <f:image image="{article.image}" class="dc-detail__image" alt="{article.productName}" width="900" />
+                        <f:image image="{article.image}" class="dc-detail__image" alt="{article.productName}" width="900" loading="lazy" />
                     </f:then>
                     <f:else>
                         <div class="dc-detail__placeholder">
