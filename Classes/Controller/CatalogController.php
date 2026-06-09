@@ -506,6 +506,10 @@ class CatalogController extends ActionController
             $arguments['type'] = $matches[1];
         }
 
+        if (preg_match('#/search/([^/]+)#', $path, $matches) === 1) {
+            $arguments['search'] = urldecode($matches[1]);
+        }
+
         return $arguments;
     }
 

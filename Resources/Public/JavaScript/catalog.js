@@ -221,12 +221,11 @@
                 path += '/type/' + encodeURIComponent(type);
             }
 
-            const params = new URLSearchParams();
             if (search) {
-                params.set('tx_digitalcatalog_catalog[search]', search);
+                path += '/search/' + encodeURIComponent(search);
             }
 
-            window.location.href = path + (params.toString() ? '?' + params.toString() : '/');
+            window.location.href = path + '/';
         });
     }
 
