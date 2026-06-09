@@ -135,6 +135,11 @@ class CatalogController extends ActionController
             }
         }
 
+        $sterileFilter = $this->resolveStringArgument('sterile') === '1';
+        if ($sterileFilter) {
+            $constraints[] = $query->like('articleNumber', '%S');
+        }
+
         if (!empty($constraints)) {
             $query->matching(count($constraints) > 1 ? $query->logicalAnd(...$constraints) : $constraints[0]);
         }
@@ -146,7 +151,7 @@ class CatalogController extends ActionController
         $typeFilter = $this->resolveStringArgument('type');
         $productType = ProductType::tryFrom($typeFilter);
 
-        $typeClassification = $this->classifyArticlesByType($storagePid, $articleUidsForBodyRegion, $systemFilter, $search);
+        $typeClassification = $this->classifyArticlesByType($storagePid, $articleUidsForBodyRegion, $systemFilter, $search, $sterileFilter);
 
         $availableTypeOptions = [];
         foreach (ProductType::cases() as $pt) {
@@ -188,6 +193,7 @@ class CatalogController extends ActionController
             'bodyRegionFilter' => $bodyRegionFilter,
             'systemFilter' => $systemFilter,
             'typeFilter' => $typeFilter,
+            'sterileFilter' => $sterileFilter,
             'availableTypeOptions' => $availableTypeOptions,
             'systemsByBodyRegion' => $systemsByBodyRegion,
             'currentPage' => $currentPage,
@@ -506,8 +512,8 @@ class CatalogController extends ActionController
             $arguments['type'] = $matches[1];
         }
 
-        if (preg_match('#/search/([^/]+)#', $path, $matches) === 1) {
-            $arguments['search'] = urldecode($matches[1]);
+        if (str_contains($path, '/sterile')) {
+            $arguments['sterile'] = '1';
         }
 
         return $arguments;
@@ -688,7 +694,8 @@ class CatalogController extends ActionController
         int $storagePid,
         array $articleUidsForBodyRegion,
         int $systemFilter,
-        string $search
+        string $search,
+        bool $sterileFilter = false
     ): array {
         $qb = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getQueryBuilderForTable('tx_docmanager_domain_model_article');
@@ -720,6 +727,10 @@ class CatalogController extends ActionController
                 $qb->expr()->like('a.product_name', $qb->createNamedParameter('%' . $search . '%')),
                 $qb->expr()->like('a.article_number', $qb->createNamedParameter('%' . $search . '%'))
             ));
+        }
+
+        if ($sterileFilter) {
+            $qb->andWhere($qb->expr()->like('a.article_number', $qb->createNamedParameter('%S')));
         }
 
         $classified = [];

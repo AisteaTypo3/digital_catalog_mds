@@ -86,8 +86,12 @@
                     </svg>
                 </div>
                 </f:if>
+                <input type="hidden" id="dc-sterile-input" name="tx_digitalcatalog_catalog[sterile]" value="{f:if(condition: sterileFilter, then: '1', else: '')}" />
+                <button type="button" id="dc-filter-sterile" class="dc-filter__chip{f:if(condition: sterileFilter, then: ' dc-filter__chip--active')}">
+                    <f:translate key="filter.sterile" extensionName="DigitalCatalog" />
+                </button>
                 <button type="submit" class="dc-filter__btn"><f:translate key="filter.btn.filter" extensionName="DigitalCatalog" /></button>
-                <f:if condition="{search} || {systemFilter} || {bodyRegionSlug} || {typeFilter}">
+                <f:if condition="{search} || {systemFilter} || {bodyRegionSlug} || {typeFilter} || {sterileFilter}">
                     <a href="{f:uri.page()}" class="dc-filter__reset">
                         <f:translate key="filter.btn.reset" extensionName="DigitalCatalog" />
                     </a>
@@ -113,7 +117,7 @@
                     <f:render partial="Article/Card" arguments="{article: article}" />
                 </f:for>
             </div>
-            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, bodyRegionSlug: bodyRegionSlug, systemFilter: systemFilter, typeFilter: typeFilter}" />
+            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, bodyRegionSlug: bodyRegionSlug, systemFilter: systemFilter, typeFilter: typeFilter, sterileFilter: sterileFilter}" />
         </f:then>
         <f:else>
             <div class="dc-empty">

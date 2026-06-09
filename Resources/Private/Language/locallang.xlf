@@ -243,6 +243,9 @@
             <trans-unit id="email.excel.sheetname">
                 <source>Products</source>
             </trans-unit>
+            <trans-unit id="filter.sterile">
+                <source>Sterile only</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

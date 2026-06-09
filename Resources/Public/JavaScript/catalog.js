@@ -205,6 +205,7 @@
             const bodyRegion = (form.querySelector('[name="tx_digitalcatalog_catalog[bodyRegion]"]')?.value || '').trim();
             const system = parseInt(form.querySelector('[name="tx_digitalcatalog_catalog[system]"]')?.value || '0', 10);
             const type = (form.querySelector('[name="tx_digitalcatalog_catalog[type]"]')?.value || '').trim();
+            const sterile = (form.querySelector('[name="tx_digitalcatalog_catalog[sterile]"]')?.value || '') === '1';
 
             let path = baseUrl;
 
@@ -221,11 +222,14 @@
                 path += '/type/' + encodeURIComponent(type);
             }
 
-            if (search) {
-                path += '/search/' + encodeURIComponent(search);
+            if (sterile) {
+                path += '/sterile';
             }
 
-            window.location.href = path + '/';
+            const params = new URLSearchParams();
+            if (search) params.set('tx_digitalcatalog_catalog[search]', search);
+
+            window.location.href = path + '/' + (params.toString() ? '?' + params.toString() : '');
         });
     }
 
@@ -452,6 +456,18 @@
         });
     }
 
+    function initSterileChip() {
+        const chip = document.getElementById('dc-filter-sterile');
+        const input = document.getElementById('dc-sterile-input');
+        if (!chip || !input) return;
+
+        chip.addEventListener('click', function () {
+            const isActive = chip.classList.contains('dc-filter__chip--active');
+            chip.classList.toggle('dc-filter__chip--active', !isActive);
+            input.value = isActive ? '' : '1';
+        });
+    }
+
     // Grid search highlight on filter
     function initSearchHighlight() {
         const searchInput = document.querySelector('.dc-filter__search');
@@ -503,6 +519,7 @@
         initWishlistToggles();
         initBodyRegionSystemFilter();
         initFilterForm();
+        initSterileChip();
         initAutocomplete();
         initQtySteppers();
         initSearchHighlight();

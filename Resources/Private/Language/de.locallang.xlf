@@ -75,6 +75,7 @@
             <trans-unit id="email.attachment.hint"><source>An Excel file with all products is attached to this email.</source><target>Eine Excel-Datei mit allen Produkten ist dieser E-Mail als Anhang beigefügt.</target></trans-unit>
             <trans-unit id="email.footer"><source>This message was generated automatically by the Digital Catalog.</source><target>Diese Nachricht wurde automatisch vom Digital Catalog generiert.</target></trans-unit>
             <trans-unit id="email.excel.sheetname"><source>Products</source><target>Produkte</target></trans-unit>
+            <trans-unit id="filter.sterile"><source>Sterile only</source><target>Nur steril</target></trans-unit>
         </body>
     </file>
 </xliff>

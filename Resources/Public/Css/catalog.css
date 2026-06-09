@@ -16,6 +16,7 @@
     --dc-shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
     --dc-shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
     --dc-radius: 8px;
+    --dc-filter-h: 44px;
     --dc-radius-lg: 16px;
     --dc-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --dc-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -149,7 +150,9 @@
 
 .dc-filter__search {
     width: 100%;
-    padding: 0.5em 2em!important;
+    height: var(--dc-filter-h);
+    box-sizing: border-box;
+    padding: 0.5em 2em !important;
     border: 1px solid var(--dc-border);
     border-radius: var(--dc-radius);
     font-size: 14px;
@@ -222,6 +225,8 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    border-left: 1px solid var(--dc-border);
+    padding-left: 12px;
 }
 
 .dc-filter__select-wrap {
@@ -230,7 +235,9 @@
 
 .dc-filter__select {
     appearance: none;
-    padding: 11px 40px 11px 14px;
+    height: var(--dc-filter-h);
+    box-sizing: border-box;
+    padding: 0 40px 0 14px;
     border: 1px solid var(--dc-border);
     border-radius: var(--dc-radius);
     font-size: 14px;
@@ -259,7 +266,9 @@
 }
 
 .dc-filter__btn {
-    padding: 11px 24px;
+    height: var(--dc-filter-h);
+    box-sizing: border-box;
+    padding: 0 24px;
     background: var(--dc-primary);
     color: #ffffff !important;
     border: none;
@@ -268,11 +277,56 @@
     font-weight: 500;
     font-family: var(--dc-font);
     cursor: pointer;
+    white-space: nowrap;
     transition: opacity var(--dc-transition);
 }
 
 .dc-filter__btn:hover {
     opacity: 0.85;
+}
+
+.dc-filter__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: var(--dc-filter-h);
+    box-sizing: border-box;
+    padding: 0 16px;
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-radius);
+    background: var(--dc-surface);
+    color: var(--dc-primary);
+    font-size: 14px;
+    font-family: var(--dc-font);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--dc-transition), border-color var(--dc-transition), color var(--dc-transition);
+}
+
+.dc-filter__chip::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Ccircle cx='8' cy='8' r='6.25' stroke='%23b0b0b0' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.dc-filter__chip:hover {
+    border-color: var(--dc-primary);
+}
+
+.dc-filter__chip--active {
+    background: var(--dc-primary);
+    border-color: var(--dc-primary);
+    color: #ffffff;
+}
+
+.dc-filter__chip--active::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Ccircle cx='8' cy='8' r='8' fill='%23ffffff'/%3E%3Cpath stroke='%230a0a0a' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round' d='M4 8.25l2.75 2.75 5.25-5.25'/%3E%3C/svg%3E");
 }
 
 .dc-filter__reset {
@@ -1465,6 +1519,10 @@
 
     .dc-filter__selects {
         flex-wrap: wrap;
+        border-left: none;
+        border-top: 1px solid var(--dc-border);
+        padding-left: 0;
+        padding-top: 10px;
     }
 
     .dc-filter__select {

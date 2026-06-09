@@ -6,7 +6,7 @@
 
         <f:if condition="{pagination.previousPageNumber}">
             <f:link.action action="list"
-                arguments="{currentPage: pagination.previousPageNumber, search: search, bodyRegion: bodyRegionSlug, system: systemFilter, type: typeFilter}"
+                arguments="{currentPage: pagination.previousPageNumber, search: search, bodyRegion: bodyRegionSlug, system: systemFilter, type: typeFilter, sterile: sterileFilter}"
                 class="dc-pagination__btn dc-pagination__btn--prev"
                 aria-label="Vorherige Seite">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -20,7 +20,7 @@
                 <f:if condition="{page}">
                     <f:then>
                         <f:link.action action="list"
-                            arguments="{currentPage: page, search: search, bodyRegion: bodyRegionSlug, system: systemFilter, type: typeFilter}"
+                            arguments="{currentPage: page, search: search, bodyRegion: bodyRegionSlug, system: systemFilter, type: typeFilter, sterile: sterileFilter}"
                             class="dc-pagination__page {f:if(condition: '{page} == {currentPage}', then: 'dc-pagination__page--active')}"
                             aria-current="{f:if(condition: '{page} == {currentPage}', then: 'page')}">
                             {page}
@@ -35,7 +35,7 @@
 
         <f:if condition="{pagination.nextPageNumber}">
             <f:link.action action="list"
-                arguments="{currentPage: pagination.nextPageNumber, search: search, bodyRegion: bodyRegionSlug, system: systemFilter, type: typeFilter}"
+                arguments="{currentPage: pagination.nextPageNumber, search: search, bodyRegion: bodyRegionSlug, system: systemFilter, type: typeFilter, sterile: sterileFilter}"
                 class="dc-pagination__btn dc-pagination__btn--next"
                 aria-label="Nächste Seite">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
