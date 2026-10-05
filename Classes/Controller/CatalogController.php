@@ -38,8 +38,9 @@ class CatalogController extends ActionController
     // System titles must exactly match the system.title values in the database.
     // To update: add/remove entries in the relevant area array — no other code changes needed.
     // Systems with products that are in no list are offered for every area (see systemsByBodyRegion()), so a missing
-    // entry never makes a system unreachable. Not derived from the data: the body-region tagging of the articles is
-    // not reliable enough yet (e.g. foot articles tagged as upper extremities).
+    // entry never makes a system unreachable. Not derived from the data: the body regions belong to the articles
+    // (validated in doc_manager), and articles used across systems carry several regions, so a list built from them
+    // would offer e.g. foot systems for the upper extremities.
     private const SYSTEMS_BY_BODY_REGION = [
         'upper-extremities' => [
             'Hand',
