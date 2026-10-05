@@ -246,6 +246,27 @@
             <trans-unit id="filter.sterile">
                 <source>Sterile only</source>
             </trans-unit>
+            <trans-unit id="pagination.label">
+                <source>Pagination</source>
+            </trans-unit>
+            <trans-unit id="pagination.previous">
+                <source>Previous page</source>
+            </trans-unit>
+            <trans-unit id="pagination.next">
+                <source>Next page</source>
+            </trans-unit>
+            <trans-unit id="inquiry.error.title">
+                <source>Error</source>
+            </trans-unit>
+            <trans-unit id="inquiry.error.required">
+                <source>Please fill in all required fields correctly.</source>
+            </trans-unit>
+            <trans-unit id="wishlist.qty.decrease">
+                <source>Decrease quantity</source>
+            </trans-unit>
+            <trans-unit id="wishlist.qty.increase">
+                <source>Increase quantity</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

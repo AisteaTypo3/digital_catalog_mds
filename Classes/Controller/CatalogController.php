@@ -25,6 +25,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class CatalogController extends ActionController
 {
@@ -37,6 +38,9 @@ class CatalogController extends ActionController
 
     // System titles must exactly match the system.title values in the database.
     // To update: add/remove entries in the relevant area array — no other code changes needed.
+    // Systems with products that are in no list are offered for every area (see systemsByBodyRegion()), so a missing
+    // entry never makes a system unreachable. Not derived from the data: the body-region tagging of the articles is
+    // not reliable enough yet (e.g. foot articles tagged as upper extremities).
     private const SYSTEMS_BY_BODY_REGION = [
         'upper-extremities' => [
             'Hand',
@@ -52,7 +56,7 @@ class CatalogController extends ActionController
             'Shoulder',
             'Clavicle',
             'PentaLock',
-            'Wrist',
+            'TITAN Nail',
         ],
         'lower-extremities' => [
             'Foot',
@@ -67,7 +71,6 @@ class CatalogController extends ActionController
             'StealthFix Intraosseous Fixation System',
         ],
         'cmf' => [
-            'MODUS',
             'MODUS 2 Midface',
             'MODUS 2 IMF',
             'Midface 0.9/1.2',
@@ -80,15 +83,18 @@ class CatalogController extends ActionController
             'CFS 1.8',
         ],
         'cmx' => [
-            'CMX Hardware',
-            'CMX Software',
             'MODUS 2 Orthognathics',
             'MODUS 2 Mandible',
-            'Wrist',
             'Forearm',
             'Ankle',
         ],
     ];
+
+    /** @var array<int, int>|null */
+    private ?array $excludedSystemUids = null;
+
+    /** @var array<int, int>|null */
+    private ?array $excludedArticleUids = null;
 
     public function __construct(
         private readonly ArticleRepository $articleRepository,
@@ -119,6 +125,11 @@ class CatalogController extends ActionController
 
         $constraints = [];
         $articleUidsForBodyRegion = [];
+
+        $excludedArticleUids = $this->findExcludedArticleUids();
+        if ($excludedArticleUids !== []) {
+            $constraints[] = $query->logicalNot($query->in('uid', $excludedArticleUids));
+        }
 
         if ($search !== '') {
             $constraints[] = $query->logicalOr(
@@ -195,7 +206,7 @@ class CatalogController extends ActionController
         $systems = $bodyRegionFilter > 0
             ? $this->findSystems(articleUids: $articleUidsForBodyRegion)
             : $this->findSystems($storagePid);
-        $systemsByBodyRegion = json_encode(self::SYSTEMS_BY_BODY_REGION, JSON_THROW_ON_ERROR);
+        $systemsByBodyRegion = json_encode($this->systemsByBodyRegion($storagePid), JSON_THROW_ON_ERROR);
         $wishlistUids = $this->wishlistService->getWishlist();
 
         // filtered and searched lists are near duplicates of the catalog: keep them out of the index, the links on
@@ -278,6 +289,10 @@ class CatalogController extends ActionController
                 $query->like('articleNumber', '%' . $term . '%')
             ),
         ];
+        $excludedArticleUids = $this->findExcludedArticleUids();
+        if ($excludedArticleUids !== []) {
+            $constraints[] = $query->logicalNot($query->in('uid', $excludedArticleUids));
+        }
 
         if ($systemFilter > 0) {
             $system = $this->systemRepository->findByUid($systemFilter);
@@ -313,6 +328,14 @@ class CatalogController extends ActionController
 
     public function showAction(Article $article): ResponseInterface
     {
+        if (in_array($article->getUid(), $this->findExcludedArticleUids(), true)) {
+            throw new PropagateResponseException(
+                GeneralUtility::makeInstance(ErrorController::class)
+                    ->pageNotFoundAction($this->request, 'Article is not part of the catalog'),
+                1790000002
+            );
+        }
+
         $wishlistUids = $this->wishlistService->getWishlist();
 
         $siteLanguage = $this->request->getAttribute('language');
@@ -467,7 +490,11 @@ class CatalogController extends ActionController
         $message = trim((string)($this->request->hasArgument('message') ? $this->request->getArgument('message') : ''));
 
         if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->addFlashMessage('Bitte fülle alle Pflichtfelder korrekt aus.', 'Fehler', ContextualFeedbackSeverity::ERROR);
+            $this->addFlashMessage(
+                (string)LocalizationUtility::translate('inquiry.error.required', 'DigitalCatalog'),
+                (string)LocalizationUtility::translate('inquiry.error.title', 'DigitalCatalog'),
+                ContextualFeedbackSeverity::ERROR
+            );
             return $this->redirect('wishlist');
         }
 
@@ -713,6 +740,11 @@ class CatalogController extends ActionController
             ->groupBy('s.uid', 's.title')
             ->orderBy('s.title', 'ASC');
 
+        $excludedSystemUids = $this->findExcludedSystemUids();
+        if ($excludedSystemUids !== []) {
+            $qb->andWhere($qb->expr()->notIn('s.uid', $qb->createNamedParameter($excludedSystemUids, \Doctrine\DBAL\ArrayParameterType::INTEGER)));
+        }
+
         if ($articleUids !== []) {
             $qb->andWhere(
                 $qb->expr()->in('mm.uid_local', $qb->createNamedParameter($articleUids, \Doctrine\DBAL\ArrayParameterType::INTEGER))
@@ -736,6 +768,95 @@ class CatalogController extends ActionController
             }
         }
         return $systems;
+    }
+
+    /**
+     * Systems per body area for the system select: the curated SYSTEMS_BY_BODY_REGION, plus every system with
+     * products that is in none of the lists (so it can always be chosen).
+     *
+     * @return array<string, array<int, string>>
+     */
+    private function systemsByBodyRegion(int $storagePid): array
+    {
+        $mapped = array_merge(...array_values(self::SYSTEMS_BY_BODY_REGION));
+        $unmapped = [];
+        foreach ($this->findSystems($storagePid) as $system) {
+            $title = (string)$system->getTitle();
+            if (!in_array($title, $mapped, true)) {
+                $unmapped[] = $title;
+            }
+        }
+
+        $result = [];
+        foreach (self::SYSTEMS_BY_BODY_REGION as $area => $titles) {
+            $result[$area] = array_values(array_unique(array_merge($titles, $unmapped)));
+        }
+
+        return $result;
+    }
+
+    /**
+     * Systems that are no products (settings.excludedSystems, titles, e.g. the CMX portal and the custom-made CMX
+     * parts): left out of the select, their articles out of list, search, suggestions and detail pages.
+     *
+     * @return array<int, int>
+     */
+    private function findExcludedSystemUids(): array
+    {
+        if ($this->excludedSystemUids !== null) {
+            return $this->excludedSystemUids;
+        }
+
+        $titles = GeneralUtility::trimExplode(',', (string)($this->settings['excludedSystems'] ?? ''), true);
+        if ($titles === []) {
+            return $this->excludedSystemUids = [];
+        }
+
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_docmanager_domain_model_system');
+        $qb->getRestrictions()->removeAll();
+        $rows = $qb->select('uid')
+            ->from('tx_docmanager_domain_model_system')
+            ->where(
+                $qb->expr()->eq('deleted', 0),
+                $qb->expr()->in('title', $qb->createNamedParameter($titles, \Doctrine\DBAL\ArrayParameterType::STRING))
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        return $this->excludedSystemUids = array_map(static fn (array $row): int => (int)$row['uid'], $rows);
+    }
+
+    /**
+     * Articles that only belong to excluded systems.
+     *
+     * @return array<int, int>
+     */
+    private function findExcludedArticleUids(): array
+    {
+        if ($this->excludedArticleUids !== null) {
+            return $this->excludedArticleUids;
+        }
+
+        $excludedSystemUids = $this->findExcludedSystemUids();
+        if ($excludedSystemUids === []) {
+            return $this->excludedArticleUids = [];
+        }
+
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_docmanager_system_article_mm');
+        $qb = $connection->createQueryBuilder();
+        $qb->getRestrictions()->removeAll();
+        $rows = $qb->select('uid_local')
+            ->from('tx_docmanager_system_article_mm')
+            ->groupBy('uid_local')
+            ->having(
+                'SUM(CASE WHEN uid_foreign IN (' . implode(',', array_map('intval', $excludedSystemUids)) . ') THEN 0 ELSE 1 END) = 0'
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        return $this->excludedArticleUids = array_map(static fn (array $row): int => (int)$row['uid_local'], $rows);
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -873,6 +994,11 @@ class CatalogController extends ActionController
 
         if ($sterileFilter) {
             $qb->andWhere($qb->expr()->like('a.article_number', $qb->createNamedParameter('%S')));
+        }
+
+        $excludedArticleUids = $this->findExcludedArticleUids();
+        if ($excludedArticleUids !== []) {
+            $qb->andWhere($qb->expr()->notIn('a.uid', $qb->createNamedParameter($excludedArticleUids, \Doctrine\DBAL\ArrayParameterType::INTEGER)));
         }
 
         $classified = [];

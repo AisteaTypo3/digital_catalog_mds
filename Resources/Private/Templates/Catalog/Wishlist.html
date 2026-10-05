@@ -83,9 +83,9 @@
                                             <f:form.hidden name="articleUid" value="{item.article.uid}" />
                                             <f:form.hidden name="quantity" value="{item.qty}" />
                                             <div class="dc-qty-stepper">
-                                                <button type="button" class="dc-qty-btn dc-qty-btn--minus" aria-label="decrease">−</button>
+                                                <button type="button" class="dc-qty-btn dc-qty-btn--minus" aria-label="{f:translate(key: 'wishlist.qty.decrease', extensionName: 'DigitalCatalog')}">−</button>
                                                 <span class="dc-qty-display">{item.qty}</span>
-                                                <button type="button" class="dc-qty-btn dc-qty-btn--plus" aria-label="increase">+</button>
+                                                <button type="button" class="dc-qty-btn dc-qty-btn--plus" aria-label="{f:translate(key: 'wishlist.qty.increase', extensionName: 'DigitalCatalog')}">+</button>
                                             </div>
                                         </f:form>
                                         <f:form action="removeFromWishlist" method="post" class="dc-form-inline">

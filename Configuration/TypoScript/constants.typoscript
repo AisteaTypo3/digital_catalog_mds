@@ -6,5 +6,7 @@ plugin.tx_digitalcatalog_catalog {
         wishlistPageUid = 6425
         eifuPageUid = 0
         eifuPortalBaseUrl = https://medartis.com
+        # systems that are no catalog products (titles, comma separated): the CMX portal and the custom-made CMX parts
+        excludedSystems = CMX Hardware, CMX Software
     }
 }

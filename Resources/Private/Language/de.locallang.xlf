@@ -76,6 +76,13 @@
             <trans-unit id="email.footer"><source>This message was generated automatically by the Digital Catalog.</source><target>Diese Nachricht wurde automatisch vom Digital Catalog generiert.</target></trans-unit>
             <trans-unit id="email.excel.sheetname"><source>Products</source><target>Produkte</target></trans-unit>
             <trans-unit id="filter.sterile"><source>Sterile only</source><target>Nur steril</target></trans-unit>
+            <trans-unit id="pagination.label"><source>Pagination</source><target>Seitennavigation</target></trans-unit>
+            <trans-unit id="pagination.previous"><source>Previous page</source><target>Vorherige Seite</target></trans-unit>
+            <trans-unit id="pagination.next"><source>Next page</source><target>Nächste Seite</target></trans-unit>
+            <trans-unit id="inquiry.error.title"><source>Error</source><target>Fehler</target></trans-unit>
+            <trans-unit id="inquiry.error.required"><source>Please fill in all required fields correctly.</source><target>Bitte fülle alle Pflichtfelder korrekt aus.</target></trans-unit>
+            <trans-unit id="wishlist.qty.decrease"><source>Decrease quantity</source><target>Menge verringern</target></trans-unit>
+            <trans-unit id="wishlist.qty.increase"><source>Increase quantity</source><target>Menge erhöhen</target></trans-unit>
         </body>
     </file>
 </xliff>

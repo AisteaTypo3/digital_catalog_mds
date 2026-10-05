@@ -2,12 +2,12 @@
       data-namespace-typo3-fluid="true">
 
 <f:if condition="{pagination.lastPageNumber} > 1">
-    <nav class="dc-pagination" aria-label="Seitennavigation">
+    <nav class="dc-pagination" aria-label="{f:translate(key: 'pagination.label', extensionName: 'DigitalCatalog')}">
 
         <f:if condition="{pagination.previousPageNumber}">
             <a href="{pageUris.{pagination.previousPageNumber}}" rel="prev"
                 class="dc-pagination__btn dc-pagination__btn--prev"
-                aria-label="Vorherige Seite">
+                aria-label="{f:translate(key: 'pagination.previous', extensionName: 'DigitalCatalog')}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M15.75 19.5 8.25 12l7.5-7.5" />
                 </svg>
@@ -34,7 +34,7 @@
         <f:if condition="{pagination.nextPageNumber}">
             <a href="{pageUris.{pagination.nextPageNumber}}" rel="next"
                 class="dc-pagination__btn dc-pagination__btn--next"
-                aria-label="Nächste Seite">
+                aria-label="{f:translate(key: 'pagination.next', extensionName: 'DigitalCatalog')}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                 </svg>

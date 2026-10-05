@@ -6,6 +6,7 @@ plugin.tx_digitalcatalog_catalog {
         wishlistPageUid = {$plugin.tx_digitalcatalog_catalog.settings.wishlistPageUid}
         eifuPageUid = {$plugin.tx_digitalcatalog_catalog.settings.eifuPageUid}
         eifuPortalBaseUrl = {$plugin.tx_digitalcatalog_catalog.settings.eifuPortalBaseUrl}
+        excludedSystems = {$plugin.tx_digitalcatalog_catalog.settings.excludedSystems}
     }
     view {
         templateRootPaths {
