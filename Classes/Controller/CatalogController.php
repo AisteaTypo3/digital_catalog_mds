@@ -47,6 +47,7 @@ class CatalogController extends ActionController
             'Proximal Humerus',
             'Shoulder',
             'Clavicle',
+            'PentaLock',
             'Wrist',
         ],
         'lower-extremities' => [
@@ -68,7 +69,7 @@ class CatalogController extends ActionController
             'Midface 0.9/1.2',
             'MODUS 2 90° Screwdriver',
             'MODUS 2 Mandible',
-            'MODUS 2 Orthognatics',
+            'MODUS 2 Orthognathics',
             'MODUS 2 Transbuccal Set',
             'TTS',
             'BFS 0.9/1.2,1.5',
@@ -77,7 +78,7 @@ class CatalogController extends ActionController
         'cmx' => [
             'CMX Hardware',
             'CMX Software',
-            'MODUS 2 Orthognatics',
+            'MODUS 2 Orthognathics',
             'MODUS 2 Mandible',
             'Wrist',
             'Forearm',

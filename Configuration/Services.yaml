@@ -11,3 +11,12 @@ services:
     public: true
     tags:
       - name: extbase.controller
+
+  cache.digitalcatalog_documents:
+    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+    factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
+    arguments: ['digitalcatalog_documents']
+
+  Medartis\DigitalCatalog\Service\ProductDocumentationService:
+    arguments:
+      $cache: '@cache.digitalcatalog_documents'

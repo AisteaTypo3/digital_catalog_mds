@@ -10,6 +10,15 @@ if (!defined('TYPO3')) {
 }
 
 (static function () {
+    // Product documentation per system and language (ProductDocumentationService): reading the download-center
+    // collections takes seconds, so the result is cached; flushed with the page caches
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['digitalcatalog_documents'] ??= [
+        'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,
+        'backend' => \TYPO3\CMS\Core\Cache\Backend\FileBackend::class,
+        'groups' => ['pages'],
+        'options' => ['defaultLifetime' => 86400],
+    ];
+
     ExtensionUtility::configurePlugin(
         'DigitalCatalog',
         'Catalog',

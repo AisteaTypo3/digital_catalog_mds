@@ -6,6 +6,7 @@ namespace Medartis\DigitalCatalog\Service;
 
 use Doctrine\DBAL\ParameterType;
 use SimpleXMLElement;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\AbstractFile;
@@ -46,6 +47,7 @@ final class ProductDocumentationService
         private readonly ConnectionPool $connectionPool,
         private readonly FileCollectionRepository $fileCollectionRepository,
         private readonly Context $context,
+        private readonly FrontendInterface $cache,
     ) {
     }
 
@@ -60,6 +62,32 @@ final class ProductDocumentationService
             return [];
         }
 
+        // reading all download-center settings and collections takes seconds per request: cache per system set,
+        // page locale and language (the collections depend on the language aspect)
+        $sortedSystems = $normalizedSystems;
+        sort($sortedSystems);
+        $cacheIdentifier = 'documents_' . sha1(json_encode([
+            $sortedSystems,
+            $pageLocale,
+            $this->context->getAspect('language')->getId(),
+        ], JSON_THROW_ON_ERROR));
+        $cached = $this->cache->get($cacheIdentifier);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $documents = $this->collectDocuments($normalizedSystems, $pageLocale);
+        $this->cache->set($cacheIdentifier, $documents);
+
+        return $documents;
+    }
+
+    /**
+     * @param array<int, string> $normalizedSystems
+     * @return array<int, array<string, int|string>>
+     */
+    private function collectDocuments(array $normalizedSystems, string $pageLocale): array
+    {
         $collectionIds = $this->resolveCollectionIdsForSystems($normalizedSystems);
         if ($collectionIds === []) {
             return [];
