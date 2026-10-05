@@ -33,7 +33,6 @@ class CatalogController extends ActionController
         'upper-extremities' => 'Upper Extremities',
         'lower-extremities' => 'Lower Extremities',
         'cmf' => 'CMF',
-        'cmx' => 'CMX',
     ];
 
     // System titles must exactly match the system.title values in the database.
@@ -81,12 +80,6 @@ class CatalogController extends ActionController
             'TTS',
             'BFS 0.9/1.2,1.5',
             'CFS 1.8',
-        ],
-        'cmx' => [
-            'MODUS 2 Orthognathics',
-            'MODUS 2 Mandible',
-            'Forearm',
-            'Ankle',
         ],
     ];
 
