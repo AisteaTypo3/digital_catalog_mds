@@ -6,6 +6,7 @@ namespace Medartis\DigitalCatalog\Controller;
 
 use GeorgRinger\NumberedPagination\NumberedPagination;
 use Medartis\DigitalCatalog\Enum\ProductType;
+use Medartis\DigitalCatalog\PageTitle\CatalogPageTitleProvider;
 use Medartis\DigitalCatalog\Service\ProductDocumentationService;
 use Medartis\DigitalCatalog\Service\WishlistService;
 use Medartis\DocManager\Domain\Model\Article;
@@ -13,7 +14,10 @@ use Medartis\DocManager\Domain\Repository\ArticleRepository;
 use Medartis\DocManager\Domain\Repository\SystemRepository;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Frontend\Controller\ErrorController;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
+use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
@@ -91,6 +95,9 @@ class CatalogController extends ActionController
         private readonly SystemRepository $systemRepository,
         private readonly ProductDocumentationService $productDocumentationService,
         private readonly WishlistService $wishlistService,
+        private readonly MetaTagManagerRegistry $metaTagManagerRegistry,
+        private readonly CatalogPageTitleProvider $pageTitleProvider,
+        private readonly PageRenderer $pageRenderer,
     ) {
     }
 
@@ -175,6 +182,15 @@ class CatalogController extends ActionController
 
         $pagination = new NumberedPagination($paginator, 7);
 
+        // a page number beyond the last page would be an empty, indexable duplicate of the list
+        if ($currentPage > 1 && $currentPage > $paginator->getNumberOfPages()) {
+            throw new PropagateResponseException(
+                GeneralUtility::makeInstance(ErrorController::class)
+                    ->pageNotFoundAction($this->request, 'Catalog page does not exist'),
+                1790000001
+            );
+        }
+
         $bodyRegions = $this->findBodyRegionsWithArticles($storagePid);
         $systems = $bodyRegionFilter > 0
             ? $this->findSystems(articleUids: $articleUidsForBodyRegion)
@@ -182,7 +198,37 @@ class CatalogController extends ActionController
         $systemsByBodyRegion = json_encode(self::SYSTEMS_BY_BODY_REGION, JSON_THROW_ON_ERROR);
         $wishlistUids = $this->wishlistService->getWishlist();
 
+        // filtered and searched lists are near duplicates of the catalog: keep them out of the index, the links on
+        // them are still followed; the plain list (also its pages) stays indexable
+        $isFiltered = $search !== '' || $bodyRegionSlug !== '' || $systemFilter > 0 || $productType !== null
+            || $sterileFilter;
+        if ($isFiltered) {
+            $this->metaTagManagerRegistry->getManagerForProperty('robots')
+                ->addProperty('robots', 'noindex,follow', [], true);
+        }
+
+        // pager links with the active filters only: empty arguments would prevent the clean routes
+        // (/area/cmf/page-2) and add a cHash
+        $filterArguments = array_filter([
+            'search' => $search,
+            'bodyRegion' => $bodyRegionSlug,
+            'system' => $systemFilter > 0 ? $systemFilter : null,
+            'type' => $productType?->value,
+            'sterile' => $sterileFilter ? '1' : null,
+        ], static fn ($value): bool => $value !== null && $value !== '');
+        $pageUris = [];
+        foreach ($pagination->getAllPageNumbers() as $pageNumber) {
+            $pageUris[$pageNumber] = $this->buildListUri($filterArguments, (int)$pageNumber);
+        }
+        if ($pagination->getPreviousPageNumber() !== null) {
+            $pageUris[$pagination->getPreviousPageNumber()] ??= $this->buildListUri($filterArguments, $pagination->getPreviousPageNumber());
+        }
+        if ($pagination->getNextPageNumber() !== null) {
+            $pageUris[$pagination->getNextPageNumber()] ??= $this->buildListUri($filterArguments, $pagination->getNextPageNumber());
+        }
+
         $this->view->assignMultiple([
+            'pageUris' => $pageUris,
             'paginator' => $paginator,
             'pagination' => $pagination,
             'articles' => $pageItems,
@@ -290,6 +336,8 @@ class CatalogController extends ActionController
             )),
             $pageLocale
         );
+
+        $this->addProductSeo($article);
 
         $this->view->assignMultiple([
             'article' => $article,
@@ -432,6 +480,99 @@ class CatalogController extends ActionController
         return $this->redirect('wishlist', null, null, ['submitted' => 1]);
     }
 
+    /**
+     * @param array<string, int|string> $filterArguments
+     */
+    private function buildListUri(array $filterArguments, int $pageNumber): string
+    {
+        $arguments = $filterArguments;
+        $sterile = ($arguments['sterile'] ?? '') === '1';
+        unset($arguments['sterile']);
+        if ($pageNumber > 1) {
+            $arguments['currentPage'] = $pageNumber;
+        }
+
+        $uri = $this->uriBuilder->reset()->uriFor('list', $arguments, 'Catalog', 'DigitalCatalog', 'Catalog');
+        if (!$sterile) {
+            return $uri;
+        }
+
+        // "/sterile" is a fixed segment of the routes (defaults: sterile = 1), which the router does not use when
+        // building links: insert it in front of the page segment (…/sterile/page-2) or at the end
+        [$path, $query] = array_pad(explode('?', $uri, 2), 2, '');
+        $path = preg_match('#/page-\d+$#', $path) === 1
+            ? (string)preg_replace('#(/page-\d+)$#', '/sterile$1', $path)
+            : rtrim($path, '/') . '/sterile';
+
+        return $path . ($query !== '' ? '?' . $query : '');
+    }
+
+    /**
+     * Detail page: title (product name, article number), meta description, Open Graph and schema.org Product.
+     */
+    private function addProductSeo(Article $article): void
+    {
+        $name = trim($article->getProductName());
+        $articleNumber = trim($article->getArticleNumber());
+        $systems = array_values(array_filter(array_map(
+            static fn ($system): string => trim((string)$system->getTitle()),
+            iterator_to_array($article->getSystems())
+        )));
+        $type = ProductType::fromProductName($name);
+
+        $title = $articleNumber !== '' ? $name . ' (' . $articleNumber . ')' : $name;
+        $this->pageTitleProvider->setTitle($title);
+
+        $parts = [$name];
+        if ($articleNumber !== '') {
+            $parts[] = 'Art. No. ' . $articleNumber;
+        }
+        if ($systems !== []) {
+            $parts[] = implode(', ', $systems) . ' system';
+        }
+        $description = implode(' · ', $parts) . ' by Medartis'
+            . ($type !== ProductType::Other ? ' (' . $type->label() . ')' : '')
+            . ': product details, instructions for use and documents.';
+
+        $this->metaTagManagerRegistry->getManagerForProperty('description')
+            ->addProperty('description', $description, [], true);
+        $this->metaTagManagerRegistry->getManagerForProperty('og:title')
+            ->addProperty('og:title', $title, [], true);
+        $this->metaTagManagerRegistry->getManagerForProperty('og:description')
+            ->addProperty('og:description', $description, [], true);
+
+        $siteUrl = rtrim((string)$this->request->getAttribute('normalizedParams')?->getSiteUrl(), '/');
+        $imageUrl = '';
+        $image = $article->getImage();
+        if ($image !== null) {
+            $publicUrl = (string)$image->getOriginalResource()->getPublicUrl();
+            if ($publicUrl !== '') {
+                $imageUrl = str_starts_with($publicUrl, 'http') ? $publicUrl : $siteUrl . '/' . ltrim($publicUrl, '/');
+                $this->metaTagManagerRegistry->getManagerForProperty('og:image')
+                    ->addProperty('og:image', $imageUrl, [], true);
+            }
+        }
+
+        $product = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $name,
+            'sku' => $articleNumber,
+            'mpn' => $articleNumber,
+            'description' => $description,
+            'brand' => ['@type' => 'Brand', 'name' => 'Medartis'],
+            'category' => $systems !== [] ? implode(', ', $systems) : null,
+            'image' => $imageUrl !== '' ? $imageUrl : null,
+            'url' => $this->uriBuilder->reset()->setCreateAbsoluteUri(true)
+                ->uriFor('show', ['article' => $article], 'Catalog', 'DigitalCatalog', 'Catalog'),
+        ], static fn ($value): bool => $value !== null && $value !== '');
+        $this->pageRenderer->addHeaderData(
+            '<script type="application/ld+json">'
+            . json_encode($product, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_THROW_ON_ERROR)
+            . '</script>'
+        );
+    }
+
     private function resolveStringArgument(string $name, string $default = ''): string
     {
         if ($this->request->hasArgument($name)) {
@@ -497,7 +638,7 @@ class CatalogController extends ActionController
         $path = $this->request->getUri()->getPath();
         $arguments = [];
 
-        if (preg_match('#/page-(\d+)$#', $path, $matches) === 1) {
+        if (preg_match('#/page-(\d+)/?$#', $path, $matches) === 1) {
             $arguments['currentPage'] = $matches[1];
         }
 

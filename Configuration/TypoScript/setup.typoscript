@@ -44,3 +44,11 @@ plugin.tx_digitalcatalog_wishlist {
         storagePid = {$plugin.tx_digitalcatalog_catalog.settings.storagePid}
     }
 }
+
+# Detail pages: product name and article number as the page title (CatalogPageTitleProvider, set in showAction)
+config.pageTitleProviders {
+    digitalCatalog {
+        provider = Medartis\DigitalCatalog\PageTitle\CatalogPageTitleProvider
+        before = record, seo
+    }
+}

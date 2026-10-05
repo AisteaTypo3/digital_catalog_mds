@@ -229,7 +229,8 @@
             const params = new URLSearchParams();
             if (search) params.set('tx_digitalcatalog_catalog[search]', search);
 
-            window.location.href = path + '/' + (params.toString() ? '?' + params.toString() : '');
+            // no trailing slash: the site URLs have none, "/page-2/" would not match the routes
+            window.location.href = path + (params.toString() ? '?' + params.toString() : '');
         });
     }
 

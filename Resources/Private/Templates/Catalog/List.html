@@ -117,7 +117,7 @@
                     <f:render partial="Article/Card" arguments="{article: article}" />
                 </f:for>
             </div>
-            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, search: search, bodyRegionSlug: bodyRegionSlug, systemFilter: systemFilter, typeFilter: typeFilter, sterileFilter: sterileFilter}" />
+            <f:render partial="Pagination" arguments="{pagination: pagination, currentPage: currentPage, pageUris: pageUris}" />
         </f:then>
         <f:else>
             <div class="dc-empty">
