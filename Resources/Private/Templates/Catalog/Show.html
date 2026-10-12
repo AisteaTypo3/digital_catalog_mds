@@ -78,6 +78,30 @@
                     </a>
                 </div>
 
+                <f:if condition="{specification.attributes}">
+                    <div class="dc-detail__meta dc-specs">
+                        <h3 class="dc-detail__meta-title"><f:translate key="spec.title" extensionName="DigitalCatalog" /></h3>
+                        <f:if condition="{specification.section}">
+                            <p class="dc-specs__section">{specification.section}</p>
+                        </f:if>
+                        <dl class="dc-specs__list">
+                            <f:for each="{specification.attributes}" as="attribute">
+                                <div class="dc-specs__row">
+                                    <dt>{attribute.label}</dt>
+                                    <dd>{attribute.value}</dd>
+                                </div>
+                            </f:for>
+                        </dl>
+                        <f:if condition="{specification.sourceUrl}">
+                            <p class="dc-specs__source">
+                                <f:translate key="spec.source" extensionName="DigitalCatalog" />:
+                                <a href="{specification.sourceUrl}#page={specification.page}" target="_blank" rel="noopener">{specification.sourceTitle}</a>,
+                                <f:translate key="spec.page" extensionName="DigitalCatalog" /> {specification.page}
+                            </p>
+                        </f:if>
+                    </div>
+                </f:if>
+
                 <f:if condition="{article.gtins}">
                     <div class="dc-detail__meta">
                         <h3 class="dc-detail__meta-title"><f:translate key="detail.gtin" extensionName="DigitalCatalog" /></h3>

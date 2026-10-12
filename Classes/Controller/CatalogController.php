@@ -8,6 +8,7 @@ use GeorgRinger\NumberedPagination\NumberedPagination;
 use Medartis\DigitalCatalog\Enum\ProductType;
 use Medartis\DigitalCatalog\PageTitle\CatalogPageTitleProvider;
 use Medartis\DigitalCatalog\Service\ProductDocumentationService;
+use Medartis\DigitalCatalog\Service\SpecificationRepository;
 use Medartis\DigitalCatalog\Service\WishlistService;
 use Medartis\DocManager\Domain\Model\Article;
 use Medartis\DocManager\Domain\Repository\ArticleRepository;
@@ -98,7 +99,29 @@ class CatalogController extends ActionController
         private readonly MetaTagManagerRegistry $metaTagManagerRegistry,
         private readonly CatalogPageTitleProvider $pageTitleProvider,
         private readonly PageRenderer $pageRenderer,
+        private readonly SpecificationRepository $specificationRepository,
     ) {
+    }
+
+    /**
+     * Catalog arguments in the query without a cHash (e.g. a hand-made "?tx_digitalcatalog_catalog[action]=show" link)
+     * are not validated by TYPO3 with the default settings (cacheHash.enforceValidation = false), but the page would
+     * still be cached – under the plain catalog URL. The catalog page would then show that article to everybody.
+     * Such requests are therefore rendered without page cache. Links built by the catalog (clean routes or with cHash)
+     * are not affected.
+     */
+    protected function initializeAction(): void
+    {
+        $routing = $this->request->getAttribute('routing');
+        if (!$routing instanceof PageArguments) {
+            return;
+        }
+        $dynamic = $routing->getDynamicArguments();
+        $hasCatalogArguments = isset($dynamic['tx_digitalcatalog_catalog']) || isset($dynamic['tx_digitalcatalog_wishlist']);
+        if ($hasCatalogArguments && !isset($routing->getArguments()['cHash'])) {
+            $this->request->getAttribute('frontend.cache.instruction')
+                ?->disableCache('EXT:digital_catalog: catalog arguments without cHash');
+        }
     }
 
     public function listAction(): ResponseInterface
@@ -356,8 +379,21 @@ class CatalogController extends ActionController
 
         $this->addProductSeo($article);
 
+        // technical data from the ordering tables of the catalog PDFs (digitalcatalog:extract-specifications)
+        $specification = $this->specificationRepository->findByArticleNumber(trim($article->getArticleNumber()));
+        if ($specification !== null) {
+            foreach ($specification['attributes'] as &$attribute) {
+                $attribute['label'] = $this->translateOr('spec.label.' . $this->labelKey($attribute['label']), $attribute['label']);
+                if ($attribute['value'] === 'yes') {
+                    $attribute['value'] = $this->translateOr('spec.value.yes', 'yes');
+                }
+            }
+            unset($attribute);
+        }
+
         $this->view->assignMultiple([
             'article' => $article,
+            'specification' => $specification,
             'documents' => $documents,
             'productDocuments' => $productDocuments,
             'pageLocale' => $pageLocale,
@@ -499,6 +535,18 @@ class CatalogController extends ActionController
         $this->wishlistService->clearWishlist();
 
         return $this->redirect('wishlist', null, null, ['submitted' => 1]);
+    }
+
+    private function translateOr(string $key, string $fallback): string
+    {
+        $translation = LocalizationUtility::translate($key, 'DigitalCatalog');
+        return $translation !== null && $translation !== '' ? $translation : $fallback;
+    }
+
+    /** "Pieces/Pkg" → "pieces-pkg", "Tip Length (with Thread)" → "tip-length-with-thread" */
+    private function labelKey(string $label): string
+    {
+        return trim((string)preg_replace('/[^a-z0-9]+/', '-', mb_strtolower(str_replace('Ø', 'diameter', $label))), '-');
     }
 
     /**

@@ -1,0 +1,135 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <style>
+        .dc-coverage { position: relative; height: 1.25rem; border-radius: 3px; background: var(--typo3-surface-container-high, #e6e6e6); overflow: hidden; }
+        .dc-coverage__bar { height: 100%; }
+        .dc-coverage__label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    </style>
+    <h1>Digital Catalog – Technical data</h1>
+    <p class="text-body-secondary">
+        Read from the ordering tables of the PDFs of type “Ordering Catalog” and “Surgical Technique” in the file list
+        (not archived, no archive folders) by the command <code>digitalcatalog:extract-specifications</code>.
+        <f:if condition="{statistics.lastRun}">
+            <f:then>Last PDF read: <f:format.date format="d.m.Y H:i">{statistics.lastRun}</f:format.date>.</f:then>
+            <f:else><strong>The command has not run yet.</strong></f:else>
+        </f:if>
+    </p>
+
+    <div class="row mb-4">
+        <div class="col-sm-4">
+            <div class="card card-size-fixed-small">
+                <div class="card-body">
+                    <div class="text-body-secondary">Articles</div>
+                    <div class="fs-2">{statistics.total}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card card-size-fixed-small">
+                <div class="card-body">
+                    <div class="text-body-secondary">With technical data</div>
+                    <div class="fs-2 text-success">{statistics.withData} <small class="fs-6">({percent} %)</small></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card card-size-fixed-small">
+                <div class="card-body">
+                    <div class="text-body-secondary">Without technical data</div>
+                    <div class="fs-2 text-danger">{statistics.withoutData}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Per system</h2>
+    <div class="table-fit">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>System</th>
+                    <th class="text-end">Articles</th>
+                    <th class="text-end">With data</th>
+                    <th class="text-end">Without data</th>
+                    <th style="width: 30%">Coverage</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <f:for each="{statistics.systems}" as="row">
+                    <tr>
+                        <td>{row.title}</td>
+                        <td class="text-end">{row.total}</td>
+                        <td class="text-end">{row.with}</td>
+                        <td class="text-end">{row.without}</td>
+                        <td>
+                            <div class="dc-coverage" title="{row.percent} %">
+                                <div class="dc-coverage__bar {row.barClass}" style="width: {row.percent}%"></div>
+                                <span class="dc-coverage__label">{row.percent} %</span>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <f:if condition="{row.without}">
+                                <f:link.action action="overview" arguments="{system: row.title}" section="missing" class="btn btn-default btn-sm">Show missing</f:link.action>
+                            </f:if>
+                        </td>
+                    </tr>
+                </f:for>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 id="missing">
+        Articles without technical data
+        <f:if condition="{system}"><small class="text-body-secondary">– {system}</small></f:if>
+    </h2>
+    <p>
+        <f:if condition="{system}">
+            <f:link.action action="overview" class="btn btn-default btn-sm">All systems</f:link.action>
+        </f:if>
+        <f:link.action action="exportMissing" arguments="{system: system}" class="btn btn-default btn-sm">Download CSV ({missingTotal})</f:link.action>
+        <f:if condition="{missingTotal} > 500"><span class="text-body-secondary">The first 500 are listed, the CSV has all.</span></f:if>
+    </p>
+    <div class="table-fit">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr><th>Article number</th><th>Product name</th><th>Systems</th></tr>
+            </thead>
+            <tbody>
+                <f:for each="{missing}" as="row">
+                    <tr><td><code>{row.number}</code></td><td>{row.name}</td><td>{row.systems}</td></tr>
+                </f:for>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Source PDFs</h2>
+    <p class="text-body-secondary">Rows: table rows read from the PDF. Articles: articles whose technical data comes from this PDF (an article listed in several PDFs takes the first: ordering catalogs before surgical techniques, English first).</p>
+    <div class="table-fit">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr><th>PDF</th><th class="text-end">Rows</th><th class="text-end">Articles</th><th>Last read</th></tr>
+            </thead>
+            <tbody>
+                <f:for each="{statistics.sources}" as="source">
+                    <f:if condition="{source.rows}">
+                        <tr>
+                            <td>
+                                <f:if condition="{source.url}">
+                                    <f:then><a href="{source.url}" target="_blank" rel="noopener">{source.identifier}</a></f:then>
+                                    <f:else>{source.identifier}</f:else>
+                                </f:if>
+                            </td>
+                            <td class="text-end">{source.rows}</td>
+                            <td class="text-end">{source.supplied}</td>
+                            <td><f:format.date format="d.m.Y H:i">{source.read}</f:format.date></td>
+                        </tr>
+                    </f:if>
+                </f:for>
+            </tbody>
+        </table>
+    </div>
+</f:section>
+</html>

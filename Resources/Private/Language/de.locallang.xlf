@@ -83,6 +83,33 @@
             <trans-unit id="inquiry.error.required"><source>Please fill in all required fields correctly.</source><target>Bitte fülle alle Pflichtfelder korrekt aus.</target></trans-unit>
             <trans-unit id="wishlist.qty.decrease"><source>Decrease quantity</source><target>Menge verringern</target></trans-unit>
             <trans-unit id="wishlist.qty.increase"><source>Increase quantity</source><target>Menge erhöhen</target></trans-unit>
+            <trans-unit id="spec.title"><source>Technical data</source><target>Technische Daten</target></trans-unit>
+            <trans-unit id="spec.source"><source>Source</source><target>Quelle</target></trans-unit>
+            <trans-unit id="spec.page"><source>page</source><target>Seite</target></trans-unit>
+            <trans-unit id="spec.value.yes"><source>yes</source><target>ja</target></trans-unit>
+            <trans-unit id="spec.label.material"><source>Material</source><target>Material</target></trans-unit>
+            <trans-unit id="spec.label.plate-thickness"><source>Plate thickness</source><target>Plattendicke</target></trans-unit>
+            <trans-unit id="spec.label.diameter"><source>Diameter</source><target>Durchmesser</target></trans-unit>
+            <trans-unit id="spec.label.length"><source>Length</source><target>Länge</target></trans-unit>
+            <trans-unit id="spec.label.holes"><source>Holes</source><target>Löcher</target></trans-unit>
+            <trans-unit id="spec.label.holes-in-shaft"><source>Holes in shaft</source><target>Löcher im Schaft</target></trans-unit>
+            <trans-unit id="spec.label.description"><source>Description</source><target>Beschreibung</target></trans-unit>
+            <trans-unit id="spec.label.sterile"><source>Sterile</source><target>Steril</target></trans-unit>
+            <trans-unit id="spec.label.pieces-pkg"><source>Pieces per package</source><target>Stück pro Packung</target></trans-unit>
+            <trans-unit id="spec.label.system-size"><source>System size</source><target>Systemgrösse</target></trans-unit>
+            <trans-unit id="spec.label.thread-length"><source>Thread length</source><target>Gewindelänge</target></trans-unit>
+            <trans-unit id="spec.label.distal-thread-length"><source>Distal thread length</source><target>Distale Gewindelänge</target></trans-unit>
+            <trans-unit id="spec.label.head-height"><source>Head height</source><target>Kopfhöhe</target></trans-unit>
+            <trans-unit id="spec.label.stop"><source>Stop</source><target>Stopp</target></trans-unit>
+            <trans-unit id="spec.label.shaft-end"><source>Shaft end</source><target>Schaftende</target></trans-unit>
+            <trans-unit id="spec.label.width"><source>Width</source><target>Breite</target></trans-unit>
+            <trans-unit id="spec.label.plate-width"><source>Plate width</source><target>Plattenbreite</target></trans-unit>
+            <trans-unit id="spec.label.bar"><source>Bar</source><target>Steg</target></trans-unit>
+            <trans-unit id="spec.label.size"><source>Size</source><target>Grösse</target></trans-unit>
+            <trans-unit id="spec.label.tip-length-with-thread"><source>Tip length (with thread)</source><target>Spitzenlänge (mit Gewinde)</target></trans-unit>
+            <trans-unit id="spec.label.tip-length-no-thread"><source>Tip length (no thread)</source><target>Spitzenlänge (ohne Gewinde)</target></trans-unit>
+            <trans-unit id="spec.label.diameter-twist-drill"><source>Ø Twist drill</source><target>Ø Spiralbohrer</target></trans-unit>
+            <trans-unit id="spec.label.diameter-drill"><source>Ø Drill</source><target>Ø Bohrer</target></trans-unit>
         </body>
     </file>
 </xliff>
