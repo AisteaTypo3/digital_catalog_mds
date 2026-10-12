@@ -20,9 +20,9 @@ use TYPO3\CMS\Core\Utility\CommandUtility;
  * ordering catalogs and surgical techniques in the file list and stores it per article number
  * (tx_digitalcatalog_specification), for the article detail page.
  *
- * Needs `pdftotext` (poppler-utils). Ordering catalogs come first, then surgical techniques, English files before
- * other languages; when an article is in several PDFs, the first one wins. Only article numbers that exist in the
- * doc_manager are stored. PDFs in archive folders are skipped unless --include-archive is set.
+ * Needs `pdftotext` (poppler-utils). Only English documents are read by default (--language, multilingual ones
+ * included), ordering catalogs first, then surgical techniques; when an article is in several PDFs, the first one
+ * wins. Only article numbers that exist in the doc_manager are stored. PDFs in archive folders are skipped unless --include-archive is set.
  *
  * Incremental, so it can run daily: what was read from each PDF is kept with the file's hash (sys_file.sha1) and the
  * parser version; unchanged PDFs are not read again. Only differences are written to the technical data (new
@@ -47,6 +47,7 @@ final class ExtractSpecificationsCommand extends Command
     {
         $this
             ->addOption('types', null, InputOption::VALUE_REQUIRED, 'Document types (file metadata "filetype") in order of priority, comma separated', 'Ordering Catalog,Surgical Technique')
+            ->addOption('language', null, InputOption::VALUE_REQUIRED, 'Only documents in this language (file metadata "sprache"; multilingual ones included), empty for all', 'English')
             ->addOption('pdftotext', null, InputOption::VALUE_REQUIRED, 'Path to pdftotext', 'pdftotext')
             ->addOption('full', null, InputOption::VALUE_NONE, 'Read every PDF again, also unchanged ones')
             ->addOption('include-archive', null, InputOption::VALUE_NONE, 'Also read PDFs in archive folders (e.g. /MDD_Archiv/), which may be outdated')
@@ -66,8 +67,9 @@ final class ExtractSpecificationsCommand extends Command
         $dryRun = (bool)$input->getOption('dry-run');
         $knownArticles = $this->knownArticleNumbers();
         $types = array_values(array_filter(array_map('trim', explode(',', (string)$input->getOption('types')))));
-        $files = $this->findFiles($types, (bool)$input->getOption('include-archive'));
-        $output->writeln(sprintf('%d PDF(s) of type %s, %d known article numbers', count($files), implode(', ', $types), count($knownArticles)));
+        $language = trim((string)$input->getOption('language'));
+        $files = $this->findFiles($types, (bool)$input->getOption('include-archive'), $language);
+        $output->writeln(sprintf('%d PDF(s) of type %s%s, %d known article numbers', count($files), implode(', ', $types), $language !== '' ? ' in ' . $language : '', count($knownArticles)));
 
         // 1. records per PDF: from the cache when the PDF and the parser are unchanged, otherwise read the PDF
         $sources = $this->repository->findSources();
@@ -201,12 +203,13 @@ final class ExtractSpecificationsCommand extends Command
     }
 
     /**
-     * PDF files of the given types, not archived, by type priority, English first.
+     * PDF files of the given types, not archived, by type priority, English first. With a language, only the
+     * documents in that language (also multilingual ones like "English,French,German").
      *
      * @param array<int, string> $types
      * @return array<int, array{uid: int, identifier: string, sha1: string}>
      */
-    private function findFiles(array $types, bool $includeArchive = false): array
+    private function findFiles(array $types, bool $includeArchive = false, string $language = ''): array
     {
         if ($types === []) {
             return [];
@@ -226,6 +229,13 @@ final class ExtractSpecificationsCommand extends Command
             ->executeQuery()
             ->fetchAllAssociative();
 
+        if ($language !== '') {
+            $rows = array_values(array_filter($rows, static fn (array $row): bool => in_array(
+                mb_strtolower($language),
+                array_map(static fn (string $part): string => mb_strtolower(trim($part)), explode(',', (string)$row['sprache'])),
+                true
+            )));
+        }
         if (!$includeArchive) {
             // old versions kept in archive folders (e.g. /MDD_Archiv/) may have outdated data
             $rows = array_values(array_filter($rows, static fn (array $row): bool => stripos((string)$row['identifier'], 'archiv') === false));
