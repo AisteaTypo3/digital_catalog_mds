@@ -864,12 +864,6 @@
     margin-bottom: 28px;
 }
 
-.dc-specs__section {
-    margin: 0 0 12px;
-    font-size: 15px;
-    color: var(--dc-primary);
-}
-
 .dc-specs__list {
     margin: 0;
     border-top: 1px solid var(--dc-border);

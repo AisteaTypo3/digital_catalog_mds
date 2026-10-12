@@ -81,9 +81,6 @@
                 <f:if condition="{specification.attributes}">
                     <div class="dc-detail__meta dc-specs">
                         <h3 class="dc-detail__meta-title"><f:translate key="spec.title" extensionName="DigitalCatalog" /></h3>
-                        <f:if condition="{specification.section}">
-                            <p class="dc-specs__section">{specification.section}</p>
-                        </f:if>
                         <dl class="dc-specs__list">
                             <f:for each="{specification.attributes}" as="attribute">
                                 <div class="dc-specs__row">
