@@ -2,47 +2,16 @@
 <f:layout name="Module" />
 
 <f:section name="Content">
-    <style>
-        .dc-coverage { position: relative; height: 1.25rem; border-radius: 3px; background: var(--typo3-surface-container-high, #e6e6e6); overflow: hidden; }
-        .dc-coverage__bar { height: 100%; }
-        .dc-coverage__label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-    </style>
-    <h1>Digital Catalog – Technical data</h1>
+    <f:render partial="SpecificationModule/Header" arguments="{_all}" />
+
     <p class="text-body-secondary">
-        Read from the ordering tables of the PDFs of type “Ordering Catalog” and “Surgical Technique” in the file list
-        (not archived, no archive folders) by the command <code>digitalcatalog:extract-specifications</code>.
+        Read from the ordering tables of the PDFs of type “Ordering Catalog” and “Surgical Technique”
+        (not archived, no archive folders).
         <f:if condition="{statistics.lastRun}">
             <f:then>Last PDF read: <f:format.date format="d.m.Y H:i">{statistics.lastRun}</f:format.date>.</f:then>
             <f:else><strong>The command has not run yet.</strong></f:else>
         </f:if>
     </p>
-
-    <div class="row mb-4">
-        <div class="col-sm-4">
-            <div class="card card-size-fixed-small">
-                <div class="card-body">
-                    <div class="text-body-secondary">Articles</div>
-                    <div class="fs-2">{statistics.total}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="card card-size-fixed-small">
-                <div class="card-body">
-                    <div class="text-body-secondary">With technical data</div>
-                    <div class="fs-2 text-success">{statistics.withData} <small class="fs-6">({percent} %)</small></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="card card-size-fixed-small">
-                <div class="card-body">
-                    <div class="text-body-secondary">Without technical data</div>
-                    <div class="fs-2 text-danger">{statistics.withoutData}</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <h2>Per system</h2>
     <div class="table-fit">
@@ -89,7 +58,7 @@
         <f:if condition="{system}">
             <f:link.action action="overview" class="btn btn-default btn-sm">All systems</f:link.action>
         </f:if>
-        <f:link.action action="exportMissing" arguments="{system: system}" class="btn btn-default btn-sm">Download CSV ({missingTotal})</f:link.action>
+        <f:link.action action="exportMissing" arguments="{system: system, kind: 'technical'}" class="btn btn-default btn-sm">Download CSV ({missingTotal})</f:link.action>
         <f:if condition="{missingTotal} > 500"><span class="text-body-secondary">The first 500 are listed, the CSV has all.</span></f:if>
     </p>
     <div class="table-fit">

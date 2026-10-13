@@ -130,11 +130,12 @@ final class SpecificationRepository
     // Overview for the backend module
 
     /**
-     * Articles of the doc_manager with and without technical data, per system, and the PDFs that supply them.
+     * The articles of the doc_manager by article number, with their systems (combined titles and "N/A" are import
+     * errors of the doc_manager and left out).
      *
-     * @return array{total: int, withData: int, withoutData: int, lastRun: int, systems: array<int, array<string, mixed>>, missing: array<int, array<string, string>>, sources: array<int, array<string, mixed>>}
+     * @return array<string, array{name: string, systems: array<string, true>}>
      */
-    public function statistics(string $systemFilter = ''): array
+    public function catalogArticles(): array
     {
         $articleBuilder = $this->connectionPool->getQueryBuilderForTable('tx_docmanager_domain_model_article');
         $articleBuilder->getRestrictions()->removeAll();
@@ -154,11 +155,71 @@ final class SpecificationRepository
             $number = trim((string)$row['article_number']);
             $articles[$number] ??= ['name' => (string)$row['product_name'], 'systems' => []];
             $system = trim((string)($row['system'] ?? ''));
-            // combined titles and "N/A" are import errors of the doc_manager
             if ($system !== '' && $system !== 'N/A' && !str_contains($system, ', ')) {
                 $articles[$number]['systems'][$system] = true;
             }
         }
+
+        return $articles;
+    }
+
+    /**
+     * Coverage per system and the articles without, for the given article numbers that have something.
+     *
+     * @param array<string, array{name: string, systems: array<string, true>}> $articles
+     * @param array<string, true> $has article numbers having it
+     * @return array{total: int, with: int, without: int, percent: int, systems: list<array<string, mixed>>, missing: list<array<string, string>>}
+     */
+    public static function coverage(array $articles, array $has, string $systemFilter = ''): array
+    {
+        $systems = [];
+        $missing = [];
+        $with = 0;
+        foreach ($articles as $number => $article) {
+            $number = (string)$number;
+            $hasIt = isset($has[$number]);
+            $with += $hasIt ? 1 : 0;
+            $titles = $article['systems'] !== [] ? array_keys($article['systems']) : ['—'];
+            foreach ($titles as $title) {
+                $systems[$title] ??= ['title' => $title, 'total' => 0, 'with' => 0];
+                $systems[$title]['total']++;
+                if ($hasIt) {
+                    $systems[$title]['with']++;
+                }
+            }
+            if (!$hasIt && ($systemFilter === '' || in_array($systemFilter, $titles, true))) {
+                $missing[] = ['number' => $number, 'name' => $article['name'], 'systems' => implode(', ', $titles)];
+            }
+        }
+        foreach ($systems as &$system) {
+            $system['without'] = $system['total'] - $system['with'];
+            // every system listed has at least one article
+            $system['percent'] = (int)round($system['with'] * 100 / $system['total']);
+            $system['barClass'] = $system['percent'] < 50 ? 'bg-danger' : ($system['percent'] < 90 ? 'bg-warning' : 'bg-success');
+        }
+        unset($system);
+        $systems = array_values($systems);
+        usort($systems, static fn (array $a, array $b): int => [$b['without'], $a['title']] <=> [$a['without'], $b['title']]);
+        usort($missing, static fn (array $a, array $b): int => strnatcmp($a['number'], $b['number']));
+
+        return [
+            'total' => count($articles),
+            'with' => $with,
+            'without' => count($articles) - $with,
+            'percent' => count($articles) > 0 ? (int)round($with * 100 / count($articles)) : 0,
+            'systems' => $systems,
+            'missing' => $missing,
+        ];
+    }
+
+    /**
+     * Articles of the doc_manager with and without technical data, per system, and the PDFs that supply them.
+     *
+     * @return array{total: int, withData: int, withoutData: int, lastRun: int, systems: array<int, array<string, mixed>>, missing: array<int, array<string, string>>, sources: array<int, array<string, mixed>>}
+     */
+    public function statistics(string $systemFilter = ''): array
+    {
+        $articles = $this->catalogArticles();
 
         $withData = array_fill_keys(
             array_map('strval', $this->connectionPool->getConnectionForTable(self::TABLE)
@@ -166,30 +227,7 @@ final class SpecificationRepository
             true
         );
 
-        $systems = [];
-        $missing = [];
-        foreach ($articles as $number => $article) {
-            $has = isset($withData[$number]);
-            $titles = $article['systems'] !== [] ? array_keys($article['systems']) : ['—'];
-            foreach ($titles as $title) {
-                $systems[$title] ??= ['title' => $title, 'total' => 0, 'with' => 0];
-                $systems[$title]['total']++;
-                if ($has) {
-                    $systems[$title]['with']++;
-                }
-            }
-            if (!$has && ($systemFilter === '' || in_array($systemFilter, $titles, true))) {
-                $missing[] = ['number' => $number, 'name' => $article['name'], 'systems' => implode(', ', $titles)];
-            }
-        }
-        foreach ($systems as &$system) {
-            $system['without'] = $system['total'] - $system['with'];
-            $system['percent'] = $system['total'] > 0 ? (int)round($system['with'] * 100 / $system['total']) : 0;
-            $system['barClass'] = $system['percent'] < 50 ? 'bg-danger' : ($system['percent'] < 90 ? 'bg-warning' : 'bg-success');
-        }
-        unset($system);
-        usort($systems, static fn (array $a, array $b): int => [$b['without'], $a['title']] <=> [$a['without'], $b['title']]);
-        usort($missing, static fn (array $a, array $b): int => strnatcmp($a['number'], $b['number']));
+        $coverage = self::coverage($articles, $withData, $systemFilter);
 
         // PDFs: rows read, articles they supply, last read
         $supplied = [];
@@ -223,12 +261,12 @@ final class SpecificationRepository
         usort($sources, static fn (array $a, array $b): int => [$b['supplied'], $b['rows']] <=> [$a['supplied'], $a['rows']]);
 
         return [
-            'total' => count($articles),
-            'withData' => count(array_intersect_key($articles, $withData)),
-            'withoutData' => count($articles) - count(array_intersect_key($articles, $withData)),
+            'total' => $coverage['total'],
+            'withData' => $coverage['with'],
+            'withoutData' => $coverage['without'],
             'lastRun' => $lastRun,
-            'systems' => $systems,
-            'missing' => $missing,
+            'systems' => $coverage['systems'],
+            'missing' => $coverage['missing'],
             'sources' => $sources,
         ];
     }
@@ -265,6 +303,9 @@ final class SpecificationRepository
         return sha1($section . "\0" . $attributesJson . "\0" . $file . "\0" . $page);
     }
 
+    /**
+     * @param array<int, array{0: string, 1: string}|mixed> $attributes label/value pairs
+     */
     public static function encodeAttributes(array $attributes): string
     {
         return (string)json_encode($attributes, JSON_UNESCAPED_UNICODE);

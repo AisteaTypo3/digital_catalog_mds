@@ -1850,3 +1850,100 @@
 .dc-card__badges .dc-tag {
     white-space: nowrap;
 }
+
+/* ── Article page: documents and product information as tabs ── */
+.dc-tabs {
+    margin-top: 56px;
+}
+
+.dc-tabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 32px;
+    border-bottom: 1px solid var(--dc-border);
+}
+
+.dc-tabs__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 -1px;
+    padding: 14px 0 12px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--dc-secondary);
+    font-family: var(--dc-font);
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 250ms ease, border-color 250ms ease;
+}
+
+.dc-tabs__tab:hover {
+    color: var(--dc-primary);
+}
+
+.dc-tabs__tab[aria-selected="true"] {
+    color: var(--dc-primary);
+    border-bottom-color: var(--dc-gold);
+}
+
+.dc-tabs__tab:focus-visible {
+    outline: 2px solid var(--dc-gold);
+    outline-offset: 4px;
+}
+
+.dc-tabs__count {
+    min-width: 20px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: var(--dc-surface-alt);
+    color: var(--dc-secondary);
+    font-size: 11px;
+    letter-spacing: 0;
+    text-align: center;
+}
+
+.dc-tabs__tab[aria-selected="true"] .dc-tabs__count {
+    background: var(--dc-gold-tint);
+    color: var(--dc-primary);
+}
+
+.dc-tabs__panel {
+    padding-top: 24px;
+}
+
+.dc-tabs__panel:focus-visible {
+    outline: 2px solid var(--dc-gold);
+    outline-offset: 4px;
+}
+
+/* without JavaScript all panels are shown one below the other */
+.dc-tabs:not(.dc-tabs--ready) .dc-tabs__panel + .dc-tabs__panel {
+    margin-top: 32px;
+}
+
+.dc-tabs__panel-head {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.dc-tabs__panel-head:not(:has(*)) {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dc-tabs__tab {
+        transition: none;
+    }
+}
+
+.dc-tabs__note {
+    margin: 0 0 16px;
+    color: var(--dc-secondary);
+    font-size: 13px;
+}

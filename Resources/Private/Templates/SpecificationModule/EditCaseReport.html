@@ -1,0 +1,58 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <f:render partial="SpecificationModule/Header" arguments="{_all}" />
+
+    <p><f:link.action action="caseReports" class="btn btn-default btn-sm">Back to the case reports</f:link.action></p>
+
+    <h2>
+        <f:if condition="{report.url}">
+            <f:then><a href="{report.url}" target="_blank" rel="noopener">{report.title}</a></f:then>
+            <f:else>{report.title}</f:else>
+        </f:if>
+        <f:if condition="{report.areas}"><small class="text-body-secondary">{report.areas}</small></f:if>
+    </h2>
+    <p class="text-body-secondary">
+        Tick the implant families the case report is shown for: all articles of a family get it. Families marked
+        <span class="badge badge-info">found</span> were found by the daily matching; untick one to take it out.
+        What you change here is kept by the matching.
+    </p>
+
+    <f:if condition="{current}">
+        <f:then>
+            <p><strong>Shown now for:</strong> <f:for each="{current}" as="section" iteration="iteration">{section}<f:if condition="{iteration.isLast}"><f:else>, </f:else></f:if></f:for></p>
+        </f:then>
+        <f:else>
+            <p><strong>Shown now for:</strong> <span class="badge badge-warning">no family</span></p>
+        </f:else>
+    </f:if>
+
+    <f:form action="updateCaseReport" arguments="{file: file}">
+        <f:for each="{groups}" as="group">
+            <details class="panel panel-default mb-2" {f:if(condition: group.checked, then: 'open')}>
+                <summary class="panel-heading" style="cursor: pointer; padding: .5rem .75rem;">
+                    <strong>{group.area}</strong>
+                    <span class="text-body-secondary">({group.families -> f:count()} families<f:if condition="{group.checked}">, {group.checked} ticked</f:if>)</span>
+                </summary>
+                <div class="panel-body" style="padding: .5rem .75rem; columns: 2 28rem;">
+                    <f:for each="{group.families}" as="family">
+                        <div class="form-check" style="break-inside: avoid;">
+                            <label class="form-check-label">
+                                <f:form.checkbox name="families" multiple="1" value="{family.title}" checked="{family.checked}" class="form-check-input" />
+                                {family.title}
+                                <span class="text-body-secondary">({family.articles})</span>
+                                <f:if condition="{family.found}"><span class="badge badge-info">found</span></f:if>
+                            </label>
+                        </div>
+                    </f:for>
+                </div>
+            </details>
+        </f:for>
+        <p class="mt-3">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <f:link.action action="caseReports" class="btn btn-default">Cancel</f:link.action>
+        </p>
+    </f:form>
+</f:section>
+</html>

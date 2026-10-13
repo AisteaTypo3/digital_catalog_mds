@@ -1,0 +1,52 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<style>
+    .dc-coverage { position: relative; height: 1.25rem; border-radius: 3px; background: var(--typo3-surface-container-high, #e6e6e6); overflow: hidden; }
+    .dc-coverage__bar { height: 100%; }
+    .dc-coverage__label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .dc-module-tabs { margin-bottom: 1.5rem; }
+</style>
+<h1>Digital Catalog – Data</h1>
+<p class="text-body-secondary">
+    What the article pages get from the PDFs in the file list, collected daily by the command
+    <code>digitalcatalog:extract-specifications</code> (English documents).
+</p>
+
+<div class="row mb-4">
+    <div class="col-sm-4">
+        <div class="card card-size-fixed-small">
+            <div class="card-body">
+                <div class="text-body-secondary">Technical data</div>
+                <div class="fs-2">{summary.technical.with} <small class="fs-6 text-body-secondary">of {summary.technical.total} articles ({summary.technical.percent} %)</small></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card card-size-fixed-small">
+            <div class="card-body">
+                <div class="text-body-secondary">Named in a product information PDF</div>
+                <div class="fs-2">{summary.productInformation.with} <small class="fs-6 text-body-secondary">of {summary.productInformation.total} articles ({summary.productInformation.percent} %)</small></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card card-size-fixed-small">
+            <div class="card-body">
+                <div class="text-body-secondary">Case reports about a catalog implant</div>
+                <div class="fs-2">{summary.caseReports.matched} <small class="fs-6 text-body-secondary">of {summary.caseReports.total} reports, {summary.caseReports.articles} articles</small></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs dc-module-tabs" role="tablist">
+    <li class="nav-item">
+        <f:link.action action="overview" class="nav-link {f:if(condition: '{tab} == \'technical\'', then: 'active')}">Technical data</f:link.action>
+    </li>
+    <li class="nav-item">
+        <f:link.action action="productInformation" class="nav-link {f:if(condition: '{tab} == \'productInformation\'', then: 'active')}">Product information</f:link.action>
+    </li>
+    <li class="nav-item">
+        <f:link.action action="caseReports" class="nav-link {f:if(condition: '{tab} == \'caseReports\'', then: 'active')}">Case reports</f:link.action>
+    </li>
+</ul>
+</html>

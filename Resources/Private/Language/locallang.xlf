@@ -60,6 +60,24 @@
             <trans-unit id="card.details">
                 <source>Details</source>
             </trans-unit>
+            <trans-unit id="tabs.label">
+                <source>Documents</source>
+            </trans-unit>
+            <trans-unit id="tabs.documents">
+                <source>Documents</source>
+            </trans-unit>
+            <trans-unit id="tabs.productDocs">
+                <source>Product information</source>
+            </trans-unit>
+            <trans-unit id="tabs.caseReports">
+                <source>Case Reports</source>
+            </trans-unit>
+            <trans-unit id="tabs.caseReport">
+                <source>Case Report</source>
+            </trans-unit>
+            <trans-unit id="caseReports.note">
+                <source>Case reports in which this implant family is named.</source>
+            </trans-unit>
             <trans-unit id="image.representative">
                 <source>Representative image</source>
             </trans-unit>

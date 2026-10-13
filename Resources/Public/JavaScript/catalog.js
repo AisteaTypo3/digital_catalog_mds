@@ -528,3 +528,58 @@
     });
 
 })();
+
+/*
+ * Article page: tabs for documents and product information (WAI-ARIA tabs, arrow keys). Without JavaScript all
+ * panels stay visible.
+ */
+(function () {
+    'use strict';
+
+    function initTabs(root) {
+        var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+        if (tabs.length === 0) {
+            return;
+        }
+        function select(tab, focus) {
+            tabs.forEach(function (other) {
+                var selected = other === tab;
+                other.setAttribute('aria-selected', selected ? 'true' : 'false');
+                other.tabIndex = selected ? 0 : -1;
+                var panel = document.getElementById(other.getAttribute('aria-controls'));
+                if (panel) {
+                    panel.hidden = !selected;
+                }
+            });
+            if (focus) {
+                tab.focus();
+            }
+        }
+        tabs.forEach(function (tab, index) {
+            tab.addEventListener('click', function () { select(tab, false); });
+            tab.addEventListener('keydown', function (event) {
+                var next = null;
+                if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+                if (event.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+                if (event.key === 'Home') next = tabs[0];
+                if (event.key === 'End') next = tabs[tabs.length - 1];
+                if (next) {
+                    event.preventDefault();
+                    select(next, true);
+                }
+            });
+        });
+        select(tabs.filter(function (tab) { return tab.getAttribute('aria-selected') === 'true'; })[0] || tabs[0], false);
+        root.classList.add('dc-tabs--ready');
+    }
+
+    function init() {
+        document.querySelectorAll('[data-dc-tabs]').forEach(initTabs);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

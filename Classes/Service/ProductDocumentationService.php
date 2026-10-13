@@ -321,6 +321,7 @@ final class ProductDocumentationService
         }
 
         return [
+            'uid' => $file->getUid(),
             'identifier' => $file->getStorage()->getUid() . ':' . $file->getIdentifier(),
             'title' => $title,
             'url' => $publicUrl,

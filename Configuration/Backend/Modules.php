@@ -14,6 +14,10 @@ return [
         'controllerActions' => [
             SpecificationModuleController::class => [
                 'overview',
+                'productInformation',
+                'caseReports',
+                'editCaseReport',
+                'updateCaseReport',
                 'exportMissing',
             ],
         ],

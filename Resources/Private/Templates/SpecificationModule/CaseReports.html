@@ -1,0 +1,59 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <f:render partial="SpecificationModule/Header" arguments="{_all}" />
+
+    <p class="text-body-secondary">
+        A case report is shown on the articles of an implant family when it names the family: a plate family by the
+        words of its name before “plate” (“superior lateral clavicle plate”), a CCS by its size (“5.0 mm CCS”); reports
+        tagged “CCS” go to all CCS families. The body area of the report has to fit. Plates there before or only
+        discussed (“pre-existing”, “can be addressed by …”) do not count. With “Edit” the families of a report are set
+        by hand; the daily matching keeps that.
+        <f:if condition="{caseReports.lastRun}">
+            <f:then>Last run: <f:format.date format="d.m.Y H:i">{caseReports.lastRun}</f:format.date>.</f:then>
+            <f:else><strong>The command has not run yet.</strong></f:else>
+        </f:if>
+    </p>
+
+    <h2>Case reports <small class="text-body-secondary">{caseReports.matched} matched, {unmatched} not matched</small></h2>
+    <div class="table-fit">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr><th>Case report</th><th>Area</th><th>Implant families</th><th class="text-end">Catalog articles</th><th></th></tr>
+            </thead>
+            <tbody>
+                <f:for each="{caseReports.reports}" as="report">
+                    <tr>
+                        <td>
+                            <f:if condition="{report.url}">
+                                <f:then><a href="{report.url}" target="_blank" rel="noopener" title="{report.identifier}">{report.title}</a></f:then>
+                                <f:else>{report.title}</f:else>
+                            </f:if>
+                        </td>
+                        <td>{report.areas}</td>
+                        <td>
+                            <f:if condition="{report.sections}">
+                                <f:then>
+                                    <f:for each="{report.sections}" as="section" iteration="iteration">{section}<f:if condition="{iteration.isLast}"><f:else><br></f:else></f:if></f:for>
+                                </f:then>
+                                <f:else><span class="badge badge-warning">not matched</span></f:else>
+                            </f:if>
+                            <f:if condition="{report.edited}"><span class="badge badge-info">set by hand</span></f:if>
+                        </td>
+                        <td class="text-end">
+                            <f:if condition="{report.articles}">
+                                <f:then>{report.articles}</f:then>
+                                <f:else><span class="text-body-secondary">–</span></f:else>
+                            </f:if>
+                        </td>
+                        <td class="text-end">
+                            <f:link.action action="editCaseReport" arguments="{file: report.uid}" class="btn btn-default btn-sm">Edit</f:link.action>
+                        </td>
+                    </tr>
+                </f:for>
+            </tbody>
+        </table>
+    </div>
+</f:section>
+</html>

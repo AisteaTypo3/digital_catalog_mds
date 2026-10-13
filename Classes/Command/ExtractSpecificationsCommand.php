@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Medartis\DigitalCatalog\Command;
 
+use Medartis\DigitalCatalog\Service\CaseReportMatcher;
+use Medartis\DigitalCatalog\Service\CaseReportRepository;
+use Medartis\DigitalCatalog\Service\DocumentArticleRepository;
 use Medartis\DigitalCatalog\Service\SpecificationParser;
 use Medartis\DigitalCatalog\Service\SpecificationRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -39,6 +42,8 @@ final class ExtractSpecificationsCommand extends Command
         private readonly ResourceFactory $resourceFactory,
         private readonly SpecificationParser $parser,
         private readonly SpecificationRepository $repository,
+        private readonly CaseReportRepository $caseReportRepository,
+        private readonly DocumentArticleRepository $documentArticleRepository,
     ) {
         parent::__construct();
     }
@@ -52,7 +57,8 @@ final class ExtractSpecificationsCommand extends Command
             ->addOption('full', null, InputOption::VALUE_NONE, 'Read every PDF again, also unchanged ones')
             ->addOption('include-archive', null, InputOption::VALUE_NONE, 'Also read PDFs in archive folders (e.g. /MDD_Archiv/), which may be outdated')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Parse and report, do not store')
-            ->addOption('article', null, InputOption::VALUE_REQUIRED, 'Print what was found for this article number');
+            ->addOption('article', null, InputOption::VALUE_REQUIRED, 'Print what was found for this article number')
+            ->addOption('skip-case-reports', null, InputOption::VALUE_NONE, 'Do not match the case reports to the implant families');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -178,7 +184,74 @@ final class ExtractSpecificationsCommand extends Command
             $this->repository->applyChanges($inserts, $updates, $deletes);
         }
 
+        if (!$input->getOption('skip-case-reports')) {
+            $this->matchCaseReports($pdftotext, $language, $full, $output);
+        }
+        $this->indexProductDocuments($pdftotext, $full, $output);
+
         return Command::SUCCESS;
+    }
+
+    /**
+     * Case reports (file type "Case Report"): their text is kept and only read again when the file changed; the
+     * matching to the implant families (CaseReportMatcher) runs every time, as the families change with the
+     * technical data.
+     */
+    private function matchCaseReports(string $pdftotext, string $language, bool $full, OutputInterface $output): void
+    {
+        $files = $this->findFiles(['Case Report'], false, $language);
+        $texts = $this->caseReportRepository->findTexts();
+        $matcher = new CaseReportMatcher($this->caseReportRepository->sectionAreas());
+        $read = $matched = 0;
+        foreach ($files as $file) {
+            $uid = $file['uid'];
+            $hash = $file['sha1'];
+            $text = $texts[$uid]['content'] ?? null;
+            if ($full || $text === null || $hash === '' || $texts[$uid]['hash'] !== $hash) {
+                $path = $this->localPath($uid);
+                $text = $path !== null ? $this->pdfText($pdftotext, $path, false) : null;
+                if ($text === null) {
+                    $output->writeln(sprintf('<comment>Could not read %s</comment>', $file['identifier']));
+                    continue;
+                }
+                $read++;
+            }
+            $sections = $matcher->match($text, array_values(array_filter(array_map('trim', explode(',', $file['system'])))));
+            $this->caseReportRepository->save($uid, $hash, $text, $sections);
+            $matched += $sections !== [] ? 1 : 0;
+            $output->writeln(sprintf('%s: %s', $file['identifier'], $sections === [] ? '-' : implode(' | ', $sections)), OutputInterface::VERBOSITY_VERBOSE);
+        }
+        $this->caseReportRepository->removeExcept(array_column($files, 'uid'));
+        $output->writeln(sprintf('<info>Case reports: %d, %d read, %d matched automatically (families set by hand in the backend module are kept)</info>', count($files), $read, $matched));
+    }
+
+    /**
+     * The article numbers named in the product information / product overview PDFs (all languages: the article page
+     * lists them in the language of the page), for the article page to list the documents an article is really in.
+     */
+    private function indexProductDocuments(string $pdftotext, bool $full, OutputInterface $output): void
+    {
+        $files = $this->findFiles(['Product Information', 'Product Overview'], false, '');
+        $hashes = $this->documentArticleRepository->findHashes();
+        $read = $withArticles = 0;
+        foreach ($files as $file) {
+            $uid = $file['uid'];
+            if (!$full && $file['sha1'] !== '' && ($hashes[$uid] ?? null) === $file['sha1']) {
+                continue;
+            }
+            $path = $this->localPath($uid);
+            $text = $path !== null ? $this->pdfText($pdftotext, $path, false) : null;
+            if ($text === null) {
+                $output->writeln(sprintf('<comment>Could not read %s</comment>', $file['identifier']));
+                continue;
+            }
+            $products = DocumentArticleRepository::productsIn($text);
+            $this->documentArticleRepository->save($uid, $file['sha1'], $products);
+            $read++;
+            $withArticles += $products !== [] ? 1 : 0;
+        }
+        $this->documentArticleRepository->removeExcept(array_column($files, 'uid'));
+        $output->writeln(sprintf('<info>Product information: %d PDF(s), %d read%s</info>', count($files), $read, $read > 0 ? sprintf(', %d naming articles', $withArticles) : ''));
     }
 
     /**
@@ -207,7 +280,7 @@ final class ExtractSpecificationsCommand extends Command
      * documents in that language (also multilingual ones like "English,French,German").
      *
      * @param array<int, string> $types
-     * @return array<int, array{uid: int, identifier: string, sha1: string}>
+     * @return array<int, array{uid: int, identifier: string, sha1: string, system: string}>
      */
     private function findFiles(array $types, bool $includeArchive = false, string $language = ''): array
     {
@@ -217,7 +290,7 @@ final class ExtractSpecificationsCommand extends Command
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('sys_file');
         $queryBuilder->getRestrictions()->removeAll();
         $rows = $queryBuilder
-            ->select('f.uid', 'f.identifier', 'f.sha1', 'm.filetype', 'm.sprache')
+            ->select('f.uid', 'f.identifier', 'f.sha1', 'm.filetype', 'm.sprache', 'm.system')
             ->from('sys_file', 'f')
             ->join('f', 'sys_file_metadata', 'm', 'm.file = f.uid AND m.sys_language_uid = 0')
             ->where(
@@ -251,6 +324,7 @@ final class ExtractSpecificationsCommand extends Command
             'uid' => (int)$row['uid'],
             'identifier' => (string)$row['identifier'],
             'sha1' => (string)$row['sha1'],
+            'system' => (string)$row['system'],
         ], $rows);
     }
 
@@ -265,9 +339,9 @@ final class ExtractSpecificationsCommand extends Command
         }
     }
 
-    private function pdfText(string $pdftotext, string $path): ?string
+    private function pdfText(string $pdftotext, string $path, bool $layout = true): ?string
     {
-        $command = escapeshellcmd($pdftotext) . ' -layout -enc UTF-8 ' . escapeshellarg($path) . ' - 2>/dev/null';
+        $command = escapeshellcmd($pdftotext) . ($layout ? ' -layout' : '') . ' -enc UTF-8 ' . escapeshellarg($path) . ' - 2>/dev/null';
         $lines = [];
         $status = 0;
         CommandUtility::exec($command, $lines, $status);
@@ -275,7 +349,7 @@ final class ExtractSpecificationsCommand extends Command
             return null;
         }
 
-        return implode("\n", $lines);
+        return implode("\n", (array)$lines);
     }
 
     private function toolAvailable(string $pdftotext): bool

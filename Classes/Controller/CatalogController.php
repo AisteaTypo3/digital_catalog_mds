@@ -7,6 +7,8 @@ namespace Medartis\DigitalCatalog\Controller;
 use GeorgRinger\NumberedPagination\NumberedPagination;
 use Medartis\DigitalCatalog\Enum\ProductType;
 use Medartis\DigitalCatalog\PageTitle\CatalogPageTitleProvider;
+use Medartis\DigitalCatalog\Service\CaseReportRepository;
+use Medartis\DigitalCatalog\Service\DocumentArticleRepository;
 use Medartis\DigitalCatalog\Service\ProductDocumentationService;
 use Medartis\DigitalCatalog\Service\SpecificationRepository;
 use Medartis\DigitalCatalog\Service\WishlistService;
@@ -102,6 +104,8 @@ class CatalogController extends ActionController
         private readonly PageRenderer $pageRenderer,
         private readonly SpecificationRepository $specificationRepository,
         private readonly CountryProvider $countryProvider,
+        private readonly CaseReportRepository $caseReportRepository,
+        private readonly DocumentArticleRepository $documentArticleRepository,
     ) {
     }
 
@@ -379,6 +383,18 @@ class CatalogController extends ActionController
             $pageLocale
         );
 
+        // only the product information naming the article, when any does; else all of its systems
+        $naming = $this->documentArticleRepository->filesNaming(
+            $article->getArticleNumber(),
+            array_map(static fn (array $document): int => (int)($document['uid'] ?? 0), $productDocuments)
+        );
+        if ($naming !== []) {
+            $productDocuments = array_values(array_filter(
+                $productDocuments,
+                static fn (array $document): bool => in_array((int)($document['uid'] ?? 0), $naming, true)
+            ));
+        }
+
         $this->addProductSeo($article);
 
         // technical data from the ordering tables of the catalog PDFs (digitalcatalog:extract-specifications)
@@ -393,9 +409,13 @@ class CatalogController extends ActionController
             unset($attribute);
         }
 
+        // case reports naming the implant family of the article (digitalcatalog:extract-specifications)
+        $caseReports = $specification !== null ? $this->caseReportRepository->findBySection($specification['section']) : [];
+
         $this->view->assignMultiple([
             'article' => $article,
             'specification' => $specification,
+            'caseReports' => $caseReports,
             'documents' => $documents,
             'productDocuments' => $productDocuments,
             'pageLocale' => $pageLocale,
