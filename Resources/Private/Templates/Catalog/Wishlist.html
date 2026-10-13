@@ -136,12 +136,24 @@
                                             required="required" />
                                     </div>
                                 </div>
-                                <div class="dc-form__group">
-                                    <label class="dc-form__label" for="dc-company">
-                                        <f:translate key="inquiry.company" extensionName="DigitalCatalog" />
-                                    </label>
-                                    <f:form.textfield id="dc-company" name="company" class="dc-form__input"
-                                        placeholder="{f:translate(key: 'inquiry.company.placeholder', extensionName: 'DigitalCatalog')}" />
+                                <div class="dc-form__row">
+                                    <div class="dc-form__group">
+                                        <label class="dc-form__label" for="dc-company">
+                                            <f:translate key="inquiry.company" extensionName="DigitalCatalog" />
+                                        </label>
+                                        <f:form.textfield id="dc-company" name="company" class="dc-form__input"
+                                            placeholder="{f:translate(key: 'inquiry.company.placeholder', extensionName: 'DigitalCatalog')}" />
+                                    </div>
+                                    <div class="dc-form__group">
+                                        <label class="dc-form__label" for="dc-country">
+                                            <f:translate key="inquiry.country" extensionName="DigitalCatalog" />
+                                            <span class="dc-form__required">*</span>
+                                        </label>
+                                        <f:form.countrySelect id="dc-country" name="country" class="dc-form__input dc-form__select"
+                                            optionLabelField="localizedName" sortByOptionLabel="true"
+                                            prependOptionLabel="{f:translate(key: 'inquiry.country.placeholder', extensionName: 'DigitalCatalog')}"
+                                            prependOptionValue="" required="true" />
+                                    </div>
                                 </div>
                                 <div class="dc-form__group">
                                     <label class="dc-form__label" for="dc-message">

@@ -20,7 +20,10 @@
             <div class="dc-detail__media">
                 <f:if condition="{article.image}">
                     <f:then>
-                        <f:image image="{article.image}" class="dc-detail__image" alt="{article.productName}" width="900" loading="lazy" />
+                        <figure class="dc-detail__figure">
+                            <f:image image="{article.image}" class="dc-detail__image" alt="{article.productName}" width="900" loading="lazy" />
+                            <figcaption class="dc-image-note"><f:translate key="image.representative" extensionName="DigitalCatalog" /></figcaption>
+                        </figure>
                     </f:then>
                     <f:else>
                         <div class="dc-detail__placeholder">

@@ -14,6 +14,7 @@ use Medartis\DocManager\Domain\Model\Article;
 use Medartis\DocManager\Domain\Repository\ArticleRepository;
 use Medartis\DocManager\Domain\Repository\SystemRepository;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Country\CountryProvider;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
@@ -100,6 +101,7 @@ class CatalogController extends ActionController
         private readonly CatalogPageTitleProvider $pageTitleProvider,
         private readonly PageRenderer $pageRenderer,
         private readonly SpecificationRepository $specificationRepository,
+        private readonly CountryProvider $countryProvider,
     ) {
     }
 
@@ -517,9 +519,11 @@ class CatalogController extends ActionController
         $name = trim((string)($this->request->hasArgument('name') ? $this->request->getArgument('name') : ''));
         $email = trim((string)($this->request->hasArgument('email') ? $this->request->getArgument('email') : ''));
         $company = trim((string)($this->request->hasArgument('company') ? $this->request->getArgument('company') : ''));
+        $countryCode = trim((string)($this->request->hasArgument('country') ? $this->request->getArgument('country') : ''));
+        $country = $countryCode !== '' ? $this->countryProvider->getByAlpha2IsoCode($countryCode) : null;
         $message = trim((string)($this->request->hasArgument('message') ? $this->request->getArgument('message') : ''));
 
-        if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $country === null) {
             $this->addFlashMessage(
                 (string)LocalizationUtility::translate('inquiry.error.required', 'DigitalCatalog'),
                 (string)LocalizationUtility::translate('inquiry.error.title', 'DigitalCatalog'),
@@ -531,7 +535,8 @@ class CatalogController extends ActionController
         $wishlistUids = $this->wishlistService->getWishlist();
         $articles = !empty($wishlistUids) ? $this->articleRepository->findByUids($wishlistUids) : [];
 
-        $this->wishlistService->sendInquiryMail($name, $email, $company, $message, $articles);
+        // the country in English for the sales team, whatever the language of the page
+        $this->wishlistService->sendInquiryMail($name, $email, $company, $country->getName(), $message, $articles);
         $this->wishlistService->clearWishlist();
 
         return $this->redirect('wishlist', null, null, ['submitted' => 1]);

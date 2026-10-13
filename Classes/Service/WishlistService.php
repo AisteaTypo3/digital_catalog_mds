@@ -116,6 +116,7 @@ class WishlistService implements SingletonInterface
         string $name,
         string $email,
         string $company,
+        string $country,
         string $message,
         iterable $articles
     ): void {
@@ -148,6 +149,7 @@ class WishlistService implements SingletonInterface
             'name'     => $name,
             'email'    => $email,
             'company'  => $company,
+            'country'  => $country,
             'message'  => $message,
             'articles' => $articleList,
             'subject'  => $subject,
@@ -157,6 +159,7 @@ class WishlistService implements SingletonInterface
                 'senderName'     => $t('email.sender.name'),
                 'senderEmail'    => $t('email.sender.email'),
                 'senderCompany'  => $t('email.sender.company'),
+                'senderCountry'  => $t('email.sender.country'),
                 'senderMessage'  => $t('email.sender.message'),
                 'productsTitle'  => $t('email.products.title'),
                 'colQty'         => $t('email.products.col.qty'),

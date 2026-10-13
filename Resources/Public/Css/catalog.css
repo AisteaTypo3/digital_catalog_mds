@@ -8,6 +8,8 @@
     --dc-secondary: #6b6b6b;
     --dc-accent: #c8102e;
     --dc-accent-soft: rgba(200, 16, 46, 0.08);
+    --dc-gold: rgb(222, 190, 92);
+    --dc-gold-tint: rgba(222, 190, 92, 0.12);
     --dc-surface: #ffffff;
     --dc-surface-alt: #f7f7f7;
     --dc-border: #e8e8e8;
@@ -439,13 +441,30 @@
     letter-spacing: 0.05em;
 }
 
+.dc-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
 .dc-card__badges {
-    position: absolute;
-    top: 12px;
-    left: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    min-width: 0;
+}
+
+/* the product pictures stand for the article, they are not photos of it */
+.dc-image-note {
+    font-size: 11px;
+    color: var(--dc-secondary);
+    white-space: nowrap;
+}
+
+.dc-card__meta .dc-image-note {
+    margin-left: auto;
 }
 
 .dc-card__body {
@@ -760,6 +779,18 @@
     min-height: 360px;
 }
 
+.dc-detail__figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.dc-detail__figure .dc-image-note {
+    align-self: flex-end;
+}
+
 .dc-detail__image {
     width: auto;
     height: auto;
@@ -800,6 +831,7 @@
     margin-bottom: 16px;
 }
 
+.dc-card__badges .dc-tag,
 .dc-detail__systems .dc-tag {
     background: var(--dc-surface-alt);
     border-color: var(--dc-border);
@@ -1174,6 +1206,14 @@
 .dc-form__input:focus,
 .dc-form__textarea:focus {
     border-color: var(--dc-primary);
+}
+.dc-form__select {
+    appearance: none;
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23666' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
 }
 
 .dc-form__input::placeholder,
@@ -1628,4 +1668,167 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/* ── Buttons in the look of the site button (aisteacorp buttons.scss, button-look): outlined, square corners,
+      uppercase with letter spacing, arrow; gold frame and tint on hover ── */
+.dc-btn,
+.dc-filter__btn,
+.dc-wishlist-btn {
+    gap: 0.85rem;
+    padding: 0.8rem 1.4rem 0.8rem 1.5rem;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--dc-primary) !important;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    box-shadow: none;
+    opacity: 1;
+    transition: border-color 250ms ease, background-color 250ms ease, color 250ms ease;
+}
+
+.dc-btn:hover,
+.dc-btn:focus-visible,
+.dc-filter__btn:hover,
+.dc-filter__btn:focus-visible,
+.dc-wishlist-btn:hover,
+.dc-wishlist-btn:focus-visible {
+    border-color: var(--dc-gold);
+    background: var(--dc-gold-tint);
+    box-shadow: none;
+    opacity: 1;
+}
+
+.dc-btn:focus-visible,
+.dc-filter__btn:focus-visible,
+.dc-wishlist-btn:focus-visible {
+    outline: 2px solid var(--dc-gold);
+    outline-offset: 3px;
+}
+
+/* the arrow of the site button, on buttons without an icon of their own */
+.dc-btn:not(:has(svg))::after,
+.dc-filter__btn::after {
+    content: "";
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 0.6rem;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10'%3E%3Cpath d='M0 5h14M10 1l4 4-4 4' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10'%3E%3Cpath d='M0 5h14M10 1l4 4-4 4' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: transform 250ms ease;
+}
+
+.dc-btn:not(:has(svg)):hover::after,
+.dc-filter__btn:hover::after {
+    transform: translateX(4px);
+}
+
+.dc-filter__btn {
+    display: inline-flex;
+    align-items: center;
+    height: var(--dc-filter-h);
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.dc-btn--sm {
+    gap: 0.6rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.72rem;
+}
+
+.dc-btn--ghost {
+    color: var(--dc-secondary) !important;
+}
+
+/* wishlist (heart) */
+.dc-btn--wishlist:hover,
+.dc-btn--wishlist-active {
+    border-color: var(--dc-gold);
+    background: var(--dc-gold-tint);
+    color: var(--dc-primary) !important;
+}
+
+.dc-btn--wishlist-active svg {
+    fill: var(--dc-gold);
+    stroke: var(--dc-primary);
+}
+
+.dc-wishlist-btn__count {
+    background: var(--dc-primary);
+    border-radius: 2px;
+    letter-spacing: 0;
+}
+
+/* "Details": the text link with gold arrow of the service boxes */
+.dc-card__detail-link {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dc-card__detail-link svg {
+    color: var(--dc-gold);
+}
+
+.dc-card:hover .dc-card__detail-link svg {
+    transform: translateX(4px);
+}
+
+/* pagination */
+.dc-pagination__page,
+.dc-pagination__btn {
+    border-radius: 2px;
+}
+
+.dc-pagination__page:hover,
+.dc-pagination__btn:hover {
+    border-color: var(--dc-gold);
+    background: var(--dc-gold-tint);
+}
+
+.dc-pagination__page--active {
+    background: var(--dc-primary) !important;
+    border-color: var(--dc-primary) !important;
+}
+
+/* heart on the cards: square like the buttons, gold instead of red */
+.dc-card__wishlist-toggle {
+    border-radius: 2px;
+}
+
+.dc-card__wishlist-toggle:hover,
+.dc-card--wishlisted .dc-card__wishlist-toggle {
+    border-color: var(--dc-gold);
+    background: var(--dc-gold-tint);
+}
+
+.dc-card__wishlist-toggle:hover svg {
+    color: var(--dc-primary);
+}
+
+.dc-card--wishlisted .dc-card__wishlist-toggle svg {
+    color: var(--dc-primary);
+    fill: var(--dc-gold);
+    stroke: var(--dc-primary);
+}
+
+/* wishlist page: gold heart, square quantity stepper */
+.dc-wishlist-header__title svg {
+    color: var(--dc-gold);
+}
+
+.dc-qty-stepper,
+.dc-qty-btn {
+    border-radius: 2px;
+}
+
+.dc-qty-btn:hover {
+    background: var(--dc-gold-tint);
 }

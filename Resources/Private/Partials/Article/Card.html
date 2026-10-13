@@ -20,26 +20,32 @@
                 </div>
             </f:else>
         </f:if>
-
-        <!-- System Badges -->
-        <f:if condition="{article.systems}">
-            <div class="dc-card__badges">
-                <f:for each="{article.systems}" as="system" iteration="iter">
-                    <f:if condition="{iter.index} < 2">
-                        <span class="dc-tag dc-tag--sm">{system.title}</span>
-                    </f:if>
-                </f:for>
-                <f:if condition="{article.systems -> f:count()} > 2">
-                    <span class="dc-tag dc-tag--sm" title="{f:translate(key: 'card.systems.more', extensionName: 'DigitalCatalog')}">
-                        +{article.systems -> f:count()}
-                    </span>
-                </f:if>
-            </div>
-        </f:if>
     </a>
 
     <!-- Body -->
     <div class="dc-card__body">
+        <!-- System badges below the image, the representative-image note beside them -->
+        <f:if condition="{article.systems} || {article.image}">
+            <div class="dc-card__meta">
+                <f:if condition="{article.systems}">
+                    <div class="dc-card__badges">
+                        <f:for each="{article.systems}" as="system" iteration="iter">
+                            <f:if condition="{iter.index} < 2">
+                                <span class="dc-tag dc-tag--sm">{system.title}</span>
+                            </f:if>
+                        </f:for>
+                        <f:if condition="{article.systems -> f:count()} > 2">
+                            <span class="dc-tag dc-tag--sm" title="{f:translate(key: 'card.systems.more', extensionName: 'DigitalCatalog')}">
+                                +{article.systems -> f:count()}
+                            </span>
+                        </f:if>
+                    </div>
+                </f:if>
+                <f:if condition="{article.image}">
+                    <span class="dc-image-note"><f:translate key="image.representative" extensionName="DigitalCatalog" /></span>
+                </f:if>
+            </div>
+        </f:if>
         <a class="dc-card__title-link" href="{f:uri.action(action:'show', arguments:'{article: article.uid}')}">
             <h3 class="dc-card__title">{article.productName}</h3>
         </a>
