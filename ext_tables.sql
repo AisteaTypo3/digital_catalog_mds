@@ -66,3 +66,22 @@ CREATE TABLE tx_digitalcatalog_document_articles (
     PRIMARY KEY (uid),
     UNIQUE KEY file (file_uid)
 );
+
+#
+# Demand for the catalog articles, as counters per month (DemandRepository): articles asked for in the inquiry
+# form (with quantity and country), put on the wishlist, and searches without result. No personal data: no names,
+# e-mail addresses, IP addresses, sessions or times, only what was asked for, how often, from which country.
+#
+CREATE TABLE tx_digitalcatalog_demand (
+    uid int(11) unsigned NOT NULL auto_increment,
+    period int(11) unsigned DEFAULT '0' NOT NULL,
+    type varchar(20) DEFAULT '' NOT NULL,
+    article_number varchar(64) DEFAULT '' NOT NULL,
+    country varchar(2) DEFAULT '' NOT NULL,
+    term varchar(100) DEFAULT '' NOT NULL,
+    hits int(11) unsigned DEFAULT '0' NOT NULL,
+    quantity int(11) unsigned DEFAULT '0' NOT NULL,
+
+    PRIMARY KEY (uid),
+    UNIQUE KEY entry (period, type, article_number, country, term)
+);

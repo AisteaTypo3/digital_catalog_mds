@@ -8,6 +8,7 @@ use GeorgRinger\NumberedPagination\NumberedPagination;
 use Medartis\DigitalCatalog\Enum\ProductType;
 use Medartis\DigitalCatalog\PageTitle\CatalogPageTitleProvider;
 use Medartis\DigitalCatalog\Service\CaseReportRepository;
+use Medartis\DigitalCatalog\Service\DemandRepository;
 use Medartis\DigitalCatalog\Service\DocumentArticleRepository;
 use Medartis\DigitalCatalog\Service\ProductDocumentationService;
 use Medartis\DigitalCatalog\Service\SpecificationRepository;
@@ -16,6 +17,8 @@ use Medartis\DocManager\Domain\Model\Article;
 use Medartis\DocManager\Domain\Repository\ArticleRepository;
 use Medartis\DocManager\Domain\Repository\SystemRepository;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Country\CountryProvider;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
@@ -106,6 +109,7 @@ class CatalogController extends ActionController
         private readonly CountryProvider $countryProvider,
         private readonly CaseReportRepository $caseReportRepository,
         private readonly DocumentArticleRepository $documentArticleRepository,
+        private readonly DemandRepository $demandRepository,
     ) {
     }
 
@@ -215,6 +219,10 @@ class CatalogController extends ActionController
         }
 
         $pagination = new NumberedPagination($paginator, 7);
+
+        if ($search !== '' && $totalCount === 0 && $currentPage === 1) {
+            $this->countDemand(fn () => $this->demandRepository->recordSearchWithoutResult($search), 'search:' . DemandRepository::cleanTerm($search));
+        }
 
         // a page number beyond the last page would be an empty, indexable duplicate of the list
         if ($currentPage > 1 && $currentPage > $paginator->getNumberOfPages()) {
@@ -463,6 +471,7 @@ class CatalogController extends ActionController
             } else {
                 $this->wishlistService->addToWishlist($uid);
                 $inWishlist = true;
+                $this->countWishlist($uid);
             }
         }
 
@@ -508,7 +517,11 @@ class CatalogController extends ActionController
     {
         $uid = $this->request->hasArgument('articleUid') ? (int)$this->request->getArgument('articleUid') : 0;
         if ($uid > 0) {
+            $isNew = !in_array($uid, $this->wishlistService->getWishlist(), true);
             $this->wishlistService->addToWishlist($uid);
+            if ($isNew) {
+                $this->countWishlist($uid);
+            }
         }
         $referer = $this->request->getHeaderLine('referer');
         return $referer ? $this->redirectToUri($referer) : $this->redirect('list');
@@ -557,9 +570,82 @@ class CatalogController extends ActionController
 
         // the country in English for the sales team, whatever the language of the page
         $this->wishlistService->sendInquiryMail($name, $email, $company, $country->getName(), $message, $articles);
+
+        // the demand: which articles in which quantity from which country, nothing about the person
+        $quantities = $this->wishlistService->getWishlistWithQuantities();
+        $asked = [];
+        foreach ($articles as $article) {
+            $asked[$article->getArticleNumber()] = $quantities[$article->getUid()] ?? 1;
+        }
+        $this->countDemand(
+            fn () => $this->demandRepository->recordInquiry($asked, $country->getAlpha2IsoCode()),
+            'inquiry:' . implode(',', array_keys($asked))
+        );
         $this->wishlistService->clearWishlist();
 
         return $this->redirect('wishlist', null, null, ['submitted' => 1]);
+    }
+
+    private function countWishlist(int $articleUid): void
+    {
+        $article = $this->articleRepository->findByUid($articleUid);
+        if ($article instanceof Article) {
+            $this->countDemand(fn () => $this->demandRepository->recordWishlist($article->getArticleNumber()), 'wishlist:' . $article->getArticleNumber());
+        }
+    }
+
+    /**
+     * Counts the demand (DemandRepository), once per visit and $key. Not counted: when switched off
+     * (settings.demandStatistics = 0), outside Production, for editors logged in to the backend, from the networks of
+     * settings.demandExcludedNetworks (the IP address is compared, not stored) and for bots. A failure never stops the
+     * visitor.
+     */
+    private function countDemand(callable $count, string $key): void
+    {
+        if ((string)($this->settings['demandStatistics'] ?? '1') !== '1' || !Environment::getContext()->isProduction()) {
+            return;
+        }
+        try {
+            if (GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('backend.user', 'isLoggedIn', false)) {
+                return;
+            }
+            $networks = trim((string)($this->settings['demandExcludedNetworks'] ?? ''));
+            $address = (string)($this->request->getAttribute('normalizedParams')?->getRemoteAddress() ?? '');
+            if ($networks !== '' && $address !== '' && GeneralUtility::cmpIP($address, $networks)) {
+                return;
+            }
+            $userAgent = $this->request->getHeaderLine('User-Agent');
+            if ($userAgent === '' || preg_match('/bot|crawl|spider|slurp|preview|monitor|headless|curl|wget|python|scrapy|lighthouse/i', $userAgent) === 1) {
+                return;
+            }
+            if ($this->countedInThisVisit($key)) {
+                return;
+            }
+            $count();
+        } catch (\Throwable) {
+            // statistics only
+        }
+    }
+
+    /**
+     * Whether $key was counted in this visit already; remembered in the session of the visitor when there is one
+     * (the wishlist has one): no session and no cookie are started for the statistics.
+     */
+    private function countedInThisVisit(string $key): bool
+    {
+        $frontendUser = $this->request->getAttribute('frontend.user');
+        if ($frontendUser === null || $frontendUser->getSession()->isNew() && empty($frontendUser->getSessionData('tx_digitalcatalog_wishlist'))) {
+            return false;
+        }
+        $counted = (array)($frontendUser->getSessionData('dc_demand_counted') ?? []);
+        $hash = substr(sha1($key), 0, 12);
+        if (in_array($hash, $counted, true)) {
+            return true;
+        }
+        $counted[] = $hash;
+        $frontendUser->setAndSaveSessionData('dc_demand_counted', array_slice($counted, -200));
+
+        return false;
     }
 
     private function translateOr(string $key, string $fallback): string

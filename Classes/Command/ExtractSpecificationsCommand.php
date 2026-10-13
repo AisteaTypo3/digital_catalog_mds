@@ -6,6 +6,7 @@ namespace Medartis\DigitalCatalog\Command;
 
 use Medartis\DigitalCatalog\Service\CaseReportMatcher;
 use Medartis\DigitalCatalog\Service\CaseReportRepository;
+use Medartis\DigitalCatalog\Service\DemandRepository;
 use Medartis\DigitalCatalog\Service\DocumentArticleRepository;
 use Medartis\DigitalCatalog\Service\SpecificationParser;
 use Medartis\DigitalCatalog\Service\SpecificationRepository;
@@ -44,6 +45,7 @@ final class ExtractSpecificationsCommand extends Command
         private readonly SpecificationRepository $repository,
         private readonly CaseReportRepository $caseReportRepository,
         private readonly DocumentArticleRepository $documentArticleRepository,
+        private readonly DemandRepository $demandRepository,
     ) {
         parent::__construct();
     }
@@ -58,7 +60,8 @@ final class ExtractSpecificationsCommand extends Command
             ->addOption('include-archive', null, InputOption::VALUE_NONE, 'Also read PDFs in archive folders (e.g. /MDD_Archiv/), which may be outdated')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Parse and report, do not store')
             ->addOption('article', null, InputOption::VALUE_REQUIRED, 'Print what was found for this article number')
-            ->addOption('skip-case-reports', null, InputOption::VALUE_NONE, 'Do not match the case reports to the implant families');
+            ->addOption('skip-case-reports', null, InputOption::VALUE_NONE, 'Do not match the case reports to the implant families')
+            ->addOption('keep-demand-months', null, InputOption::VALUE_REQUIRED, 'Delete the demand counters (inquiries, wishlist, searches) older than this many months', '24');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -188,6 +191,11 @@ final class ExtractSpecificationsCommand extends Command
             $this->matchCaseReports($pdftotext, $language, $full, $output);
         }
         $this->indexProductDocuments($pdftotext, $full, $output);
+
+        $purged = $this->demandRepository->purge((int)$input->getOption('keep-demand-months'));
+        if ($purged > 0) {
+            $output->writeln(sprintf('Demand: %d counter(s) older than %d months deleted', $purged, (int)$input->getOption('keep-demand-months')));
+        }
 
         return Command::SUCCESS;
     }

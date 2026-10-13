@@ -6,6 +6,7 @@ namespace Medartis\DigitalCatalog\Controller\Backend;
 
 use Medartis\DigitalCatalog\Service\CaseReportRepository;
 use Medartis\DigitalCatalog\Service\CatalogDataStatistics;
+use Medartis\DigitalCatalog\Service\DemandRepository;
 use Medartis\DigitalCatalog\Service\SpecificationRepository;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -19,6 +20,7 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
  * - product information: which articles are named in a product information PDF, per system and per PDF
  * - case reports: which reports are about which implant families, and which are not matched; the families of a
  *   report can be set by hand (whole families, not article by article)
+ * - demand: articles asked for, put on the wishlist and searches without result (counters without personal data)
  */
 final class SpecificationModuleController extends ActionController
 {
@@ -27,6 +29,7 @@ final class SpecificationModuleController extends ActionController
         private readonly SpecificationRepository $specificationRepository,
         private readonly CatalogDataStatistics $catalogDataStatistics,
         private readonly CaseReportRepository $caseReportRepository,
+        private readonly DemandRepository $demandRepository,
     ) {
     }
 
@@ -63,6 +66,67 @@ final class SpecificationModuleController extends ActionController
             'caseReports' => $caseReports,
             'unmatched' => count($caseReports['reports']) - $caseReports['matched'],
         ], null, null, $caseReports);
+    }
+
+    /**
+     * @param int $months the last months (0: all kept)
+     */
+    public function demandAction(int $months = 12): ResponseInterface
+    {
+        $demand = $this->demandRepository->statistics(
+            $months > 0 ? DemandRepository::monthsAgo($months) : 0,
+            $this->specificationRepository->catalogArticles()
+        );
+
+        return $this->render('Demand', 'demand', [
+            'demand' => $demand,
+            'months' => $months,
+            'inquired' => array_slice($demand['inquired'], 0, 50),
+            'wishlisted' => array_slice($demand['wishlisted'], 0, 50),
+            'terms' => array_slice($demand['terms'], 0, 50),
+            'periods' => [3 => 'Last 3 months', 12 => 'Last 12 months', 0 => 'All (up to 24 months)'],
+            'termGroups' => $this->demandRepository->termGroups(),
+        ]);
+    }
+
+    public function saveTermGroupsAction(string $termGroups = '', int $months = 12): ResponseInterface
+    {
+        $this->demandRepository->saveTermGroups($termGroups);
+        $this->addFlashMessage('The searches are grouped by the new term groups, also those counted before.', 'Term groups saved', ContextualFeedbackSeverity::OK);
+
+        return $this->redirect('demand', null, null, ['months' => $months]);
+    }
+
+    public function exportDemandAction(int $months = 12): ResponseInterface
+    {
+        $demand = $this->demandRepository->statistics(
+            $months > 0 ? DemandRepository::monthsAgo($months) : 0,
+            $this->specificationRepository->catalogArticles()
+        );
+        $wishlist = array_column($demand['wishlisted'], 'hits', 'number');
+        $handle = fopen('php://temp', 'r+');
+        if ($handle === false) {
+            throw new \RuntimeException('Could not open a temporary stream for the CSV', 1791900002);
+        }
+        fwrite($handle, "\xEF\xBB\xBF");
+        fputcsv($handle, ['Article number', 'Product name', 'Systems', 'Inquiries', 'Quantity asked for', 'Countries', 'Put on the wishlist'], ';');
+        foreach ($demand['inquired'] as $row) {
+            fputcsv($handle, [$row['number'], $row['name'], $row['systems'], $row['hits'], $row['quantity'], $row['countries'], $wishlist[$row['number']] ?? 0], ';');
+            unset($wishlist[$row['number']]);
+        }
+        foreach ($demand['wishlisted'] as $row) {
+            if (isset($wishlist[$row['number']])) {
+                fputcsv($handle, [$row['number'], $row['name'], $row['systems'], 0, 0, '', $row['hits']], ';');
+            }
+        }
+        rewind($handle);
+        $csv = (string)stream_get_contents($handle);
+        fclose($handle);
+
+        return $this->responseFactory->createResponse()
+            ->withHeader('Content-Type', 'text/csv; charset=utf-8')
+            ->withHeader('Content-Disposition', 'attachment; filename="catalog-demand-' . ($months > 0 ? $months . '-months' : 'all') . '.csv"')
+            ->withBody($this->streamFactory->createStream($csv));
     }
 
     /**

@@ -7,6 +7,8 @@ plugin.tx_digitalcatalog_catalog {
         eifuPageUid = {$plugin.tx_digitalcatalog_catalog.settings.eifuPageUid}
         eifuPortalBaseUrl = {$plugin.tx_digitalcatalog_catalog.settings.eifuPortalBaseUrl}
         excludedSystems = {$plugin.tx_digitalcatalog_catalog.settings.excludedSystems}
+        demandStatistics = {$plugin.tx_digitalcatalog_catalog.settings.demandStatistics}
+        demandExcludedNetworks = {$plugin.tx_digitalcatalog_catalog.settings.demandExcludedNetworks}
     }
     view {
         templateRootPaths {
@@ -29,6 +31,8 @@ plugin.tx_digitalcatalog_wishlist {
         storagePid = {$plugin.tx_digitalcatalog_catalog.settings.storagePid}
         catalogPageUid = {$plugin.tx_digitalcatalog_catalog.settings.catalogPageUid}
         wishlistPageUid = {$plugin.tx_digitalcatalog_catalog.settings.wishlistPageUid}
+        demandStatistics = {$plugin.tx_digitalcatalog_catalog.settings.demandStatistics}
+        demandExcludedNetworks = {$plugin.tx_digitalcatalog_catalog.settings.demandExcludedNetworks}
     }
     view {
         templateRootPaths {

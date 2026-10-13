@@ -8,5 +8,10 @@ plugin.tx_digitalcatalog_catalog {
         eifuPortalBaseUrl = https://medartis.com
         # systems that are no catalog products (titles, comma separated): the CMX portal and the custom-made CMX parts
         excludedSystems = CMX Hardware, CMX Software
+        # count the demand (articles asked for, put on the wishlist, searches without result) per month, without
+        # personal data, for the backend module "Digital Catalog – Data"; 0 to switch it off
+        demandStatistics = 1
+        # networks of Medartis (comma separated IP addresses or ranges, e.g. 203.0.113.0/24): not counted
+        demandExcludedNetworks =
     }
 }

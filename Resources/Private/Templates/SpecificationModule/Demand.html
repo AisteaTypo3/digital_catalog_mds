@@ -1,0 +1,113 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Module" />
+
+<f:section name="Content">
+    <f:render partial="SpecificationModule/Header" arguments="{_all}" />
+
+    <p class="text-body-secondary">
+        What visitors of the catalog ask for, counted per month without personal data: no names, e-mail addresses,
+        IP addresses or sessions are kept, only the articles of an inquiry with quantity and country, the articles put
+        on the wishlist and the searches without result. Counters older than 24 months are deleted by the daily command.
+    </p>
+
+    <p>
+        <f:for each="{periods}" as="label" key="period">
+            <f:link.action action="demand" arguments="{months: period}" class="btn btn-sm {f:if(condition: '{months} == {period}', then: 'btn-primary', else: 'btn-default')}">{label}</f:link.action>
+        </f:for>
+        <f:link.action action="exportDemand" arguments="{months: months}" class="btn btn-default btn-sm">Download CSV</f:link.action>
+    </p>
+
+    <div class="row mb-4">
+        <div class="col-sm-4"><div class="card card-size-fixed-small"><div class="card-body">
+            <div class="text-body-secondary">Articles asked for (inquiry lines)</div>
+            <div class="fs-2">{demand.inquiries}</div>
+        </div></div></div>
+        <div class="col-sm-4"><div class="card card-size-fixed-small"><div class="card-body">
+            <div class="text-body-secondary">Put on the wishlist</div>
+            <div class="fs-2">{demand.wishlist}</div>
+        </div></div></div>
+        <div class="col-sm-4"><div class="card card-size-fixed-small"><div class="card-body">
+            <div class="text-body-secondary">Searches without result</div>
+            <div class="fs-2">{demand.searches}</div>
+        </div></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <h2>Most asked for</h2>
+            <f:render section="Articles" arguments="{rows: inquired, inquiry: 1}" />
+
+            <h2>Most put on the wishlist</h2>
+            <f:render section="Articles" arguments="{rows: wishlisted, inquiry: 0}" />
+        </div>
+        <div class="col-lg-4">
+            <h2>Inquiries by country</h2>
+            <f:render section="Counts" arguments="{rows: demand.countries, label: 'Country', field: 'name'}" />
+
+            <h2>Inquiries by system</h2>
+            <f:render section="Counts" arguments="{rows: demand.systems, label: 'System', field: 'title'}" />
+
+            <h2>Searches without result</h2>
+            <p class="text-body-secondary">What visitors looked for and did not find: missing articles, other spellings, numbers of other makers.</p>
+            <f:render section="Counts" arguments="{rows: terms, label: 'Search', field: 'term'}" />
+
+            <h3 class="mt-3">Term groups</h3>
+            <p class="text-body-secondary">
+                Searches meaning the same counted together, one group per line: <code>group: term, term</code>, e.g.
+                <code>LCP (Synthes): synthes lcp, lcp plate</code>. Applies to the searches counted before, too.
+            </p>
+            <f:form action="saveTermGroups" arguments="{months: months}">
+                <f:form.textarea name="termGroups" value="{termGroups}" rows="6" class="form-control mb-2" />
+                <button type="submit" class="btn btn-default btn-sm">Save term groups</button>
+            </f:form>
+        </div>
+    </div>
+</f:section>
+
+<f:section name="Articles">
+    <f:if condition="{rows}">
+        <f:then>
+            <div class="table-fit">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Article number</th><th>Product name</th><th>Systems</th><th class="text-end">Times</th>
+                            <f:if condition="{inquiry}"><th class="text-end">Quantity</th><th>Countries</th></f:if>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <f:for each="{rows}" as="row">
+                            <tr>
+                                <td><code>{row.number}</code></td>
+                                <td>{row.name}</td>
+                                <td>{row.systems}</td>
+                                <td class="text-end">{row.hits}</td>
+                                <f:if condition="{inquiry}"><td class="text-end">{row.quantity}</td><td>{row.countries}</td></f:if>
+                            </tr>
+                        </f:for>
+                    </tbody>
+                </table>
+            </div>
+        </f:then>
+        <f:else><p class="text-body-secondary">Nothing counted in this period yet.</p></f:else>
+    </f:if>
+</f:section>
+
+<f:section name="Counts">
+    <f:if condition="{rows}">
+        <f:then>
+            <div class="table-fit">
+                <table class="table table-striped table-sm">
+                    <thead><tr><th>{label}</th><th class="text-end">Times</th></tr></thead>
+                    <tbody>
+                        <f:for each="{rows}" as="row">
+                            <tr><td><f:if condition="{field} == 'term'"><f:then><code>{row.term}</code></f:then><f:else>{row.{field}}</f:else></f:if></td><td class="text-end">{row.hits}</td></tr>
+                        </f:for>
+                    </tbody>
+                </table>
+            </div>
+        </f:then>
+        <f:else><p class="text-body-secondary">Nothing counted in this period yet.</p></f:else>
+    </f:if>
+</f:section>
+</html>
