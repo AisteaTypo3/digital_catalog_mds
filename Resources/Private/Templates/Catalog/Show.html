@@ -1,4 +1,5 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:dc="http://typo3.org/ns/Medartis/DigitalCatalog/ViewHelpers"
       data-namespace-typo3-fluid="true">
 <f:layout name="Default" />
 
@@ -22,7 +23,9 @@
                     <f:then>
                         <figure class="dc-detail__figure">
                             <f:image image="{article.image}" class="dc-detail__image" alt="{article.productName}" width="900" loading="lazy" />
-                            <figcaption class="dc-image-note"><f:translate key="image.representative" extensionName="DigitalCatalog" /></figcaption>
+                            <f:if condition="{dc:representativeImage(article: article)}">
+                                <figcaption class="dc-image-note"><f:translate key="image.representative" extensionName="DigitalCatalog" /></figcaption>
+                            </f:if>
                         </figure>
                     </f:then>
                     <f:else>

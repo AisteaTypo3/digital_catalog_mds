@@ -24,8 +24,9 @@
 
     <!-- Body -->
     <div class="dc-card__body">
-        <!-- System badges below the image, the representative-image note beside them -->
-        <f:if condition="{article.systems} || {article.image}">
+        <!-- System badges below the image; beside them the note when the picture only stands for the article -->
+        <f:variable name="representative" value="{dc:representativeImage(article: article)}" />
+        <f:if condition="{article.systems} || {representative}">
             <div class="dc-card__meta">
                 <f:if condition="{article.systems}">
                     <div class="dc-card__badges">
@@ -41,7 +42,7 @@
                         </f:if>
                     </div>
                 </f:if>
-                <f:if condition="{article.image}">
+                <f:if condition="{representative}">
                     <span class="dc-image-note"><f:translate key="image.representative" extensionName="DigitalCatalog" /></span>
                 </f:if>
             </div>
