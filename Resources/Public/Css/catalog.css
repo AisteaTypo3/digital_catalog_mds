@@ -1832,3 +1832,21 @@
 .dc-qty-btn:hover {
     background: var(--dc-gold-tint);
 }
+
+/* the representative-image note on its own line right under the picture (like the caption on the detail page),
+   the system labels below it get the full width and keep each label on one line */
+.dc-card__meta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.dc-card__meta .dc-image-note {
+    order: -1;
+    margin-left: 0;
+    text-align: right;
+}
+
+.dc-card__badges .dc-tag {
+    white-space: nowrap;
+}
